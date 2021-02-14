@@ -6,11 +6,11 @@ const port = 1616;
 
 
 clients = new Array(8).fill(null);
-tokens_center = new Array(8)
-dices_val = [1, 1]
-characters = new Array(8)
-areas = new Array(6)
-active_player = 0
+tokens_center = new Array(8);
+dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
+characters = new Array(8);
+areas = new Array(6);
+active_player = 0;
 
 
 /*
@@ -78,13 +78,10 @@ io.on('connection', (socket) => {
 		// 				comm.send(client, msg)
 	});
 
-	socket.on('dices', (data) => {
-		console.log(data);
-		// print("Player {0} rolled the dices".format(game.PLAYERS[self.i][0]))
-		// self.server.dices_val = [random.randint(1, 4), random.randint(1, 6)]
-		// for client in self.server.clients:
-		// 		if client is not None:
-		// 				comm.send(client, ['dices', self.server.dices_val])
+	socket.on('dices', () => {
+		console.log("Player", i, "rolled the dices");
+		dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
+		io.emit('dices', dices_val)
 	});
 
 	socket.on('reveal', (data) => {

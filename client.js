@@ -21,9 +21,7 @@ socket.on('token', (data) => {
 });
 
 socket.on('dices', (data) => {
-  console.log(data);
-  // self.game.dices[0].roll_to(msg[1][0])
-  // self.game.dices[1].roll_to(msg[1][1])
+  dices.forEach((dice, i) => {dice.roll_to(data[i]);});
 });
 
 socket.on('reveal', (data) => {
