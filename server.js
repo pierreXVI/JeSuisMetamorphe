@@ -3,26 +3,27 @@ const express  = require('express');
 const socketIO = require('socket.io');
 
 const port = 1616;
+const N_PLAYERS = 8;
 
 
-clients = new Array(8).fill(null);
-tokens_center = new Array(8);
+clients = new Array(N_PLAYERS).fill(null);
+
+tokens_center = new Array(2 * N_PLAYERS);
+for (var i = 0; i < N_PLAYERS; i++) {
+	tokens_center[2 * i] = [.25 + .02 * Math.cos(2 * i * Math.PI / N_PLAYERS), .15 + .02 * Math.sin(2 * i * Math.PI / N_PLAYERS)];
+	tokens_center[2 * i + 1] = [.03 + .02 * (i % (N_PLAYERS / 2)), .25 + .02 * Math.floor(i / (N_PLAYERS / 2))];
+}
+
 dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
-characters = new Array(8);
+
+characters = new Array(N_PLAYERS);
+
 areas = new Array(6);
+
 active_player = 0;
 
 
 /*
-self.tokens_center = []
-for i in range(_N_PLAYERS):
-		self.tokens_center.append((425 + 30 * math.cos(2 * i * math.pi / _N_PLAYERS),
-															 270 + 30 * math.sin(2 * i * math.pi / _N_PLAYERS)))
-		self.tokens_center.append((60 + 30 * (i % (_N_PLAYERS / 2)),
-															 430 + 30 * (i // (_N_PLAYERS / 2))))
-
-self.dices_val = [random.randint(1, 4), random.randint(1, 6)]
-
 self.characters = []
 if _N_PLAYERS >= 7:  # Removing Bob for 7 and 8 players
 		game.Character.CHARACTERS[1 + 0].pop(4)
@@ -69,13 +70,9 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('token', (data) => {
-		console.log(data);
-		// print("Player {0} moved it's {1} token"
-		// 			.format(game.PLAYERS[self.i][0], 'second' if msg[1] % 2 else 'first'))
-		// self.server.tokens_center[msg[1]] = msg[2]
-		// for client in self.server.clients:
-		// 		if client is not None and client is not self.server.clients[self.i]:
-		// 				comm.send(client, msg)
+		console.log("Player", i, "moved token", data['i_token'], "in", data['center']);
+		tokens_center[data['i_token']] = data['center'];
+		io.emit('token', data)
 	});
 
 	socket.on('dices', () => {

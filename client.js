@@ -1,5 +1,10 @@
 let socket = io();
 
+socket.on('disconnect', () => {
+  console.log("Lost connection from server");
+  clearInterval(timer_id);
+});
+
 socket.on('init', (data) => {
   if (data['id'] < 0) {
     console.log("Connection denied by server");
@@ -12,12 +17,12 @@ socket.on('init', (data) => {
   areas = data['areas'];
   active_player = data['active_player'];
 
-  setInterval(update_display, 100);
+  game(id, tokens_center, dices_val, characters, areas, active_player);
 });
 
 socket.on('token', (data) => {
   console.log(data);
-  // self.game.tokens[msg[1]].center = msg[2]
+  tokens[data['i_token']].center = data['center'];
 });
 
 socket.on('dices', (data) => {
@@ -54,8 +59,8 @@ socket.on('take', (data) => {
 });
 
 
-function send_token(i){
-  socket.emit('token', {'id': i, 'center': self.game.tokens[i].center});
+function send_token(i_token, center){
+  socket.emit('token', {'i_token': i_token, 'center': center});
 }
 
 function roll_dice(){
@@ -74,17 +79,49 @@ function draw(i){
   socket.emit('draw', {'type': i});
 }
 
-function vision(){
+function vision(i_vision, i_player){
   socket.emit('vision', {'i_vision': i_vision, 'i_player': i_player});
 }
 
-function take(){
+function take(i_player, i_equipment){
   socket.emit('take', {'i_player': i_player, 'i_equipment': i_equipment});
 }
 
 
-var canvas = document.getElementById("game_canvas");
-var canvas_ctx = canvas.getContext("2d");
+document.addEventListener('mousedown', e => {
+  owned_tokens.sort((a, b) => {return 10 * (b.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
+  for (var i = 0; i < owned_tokens.length; i++) {
+    owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(e.offsetX, e.offsetY));
+    if (owned_tokens[i].hold){
+      return;
+    }
+  }
+});
+
+document.addEventListener('mouseup', e => {
+  owned_tokens.forEach((token, i) => {
+    if (token.hold) {
+      token.drop();
+      send_token(tokens.indexOf(token), token.center);
+    }
+  });
+});
+
+document.addEventListener('mousemove', e => {
+  owned_tokens.forEach((token, i) => {
+    if (token.hold){
+      token.center = abs2rel(e.offsetX, e.offsetY);
+    }
+  });
+});
+
+document.addEventListener('keydown', e => {
+  switch (e.key) {
+    case 'd':
+      roll_dice();
+      break;
+  }
+});
 
 
 function rel2abs(){
@@ -127,9 +164,11 @@ function abs2rel(){
   return out;
 }
 
+const PLAYERS = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#FF9632', '#FFFF00', '#6400C8', '#141414']
+
 
 class Token{
-  static SIZE = 0.01;
+  static SIZE = 0.007;
   static SHADE_FACTOR = 0.8;
 
   constructor(color, c_position){
@@ -183,6 +222,7 @@ class Token{
     return '#' + ((r.length==1) ? '0' + r:r) + ((g.length==1) ? '0' + g:g) + ((b.length==1) ? '0' + b:b);
   }
 }
+
 
 class Dice{
   static SIZE = .025;
@@ -242,40 +282,36 @@ class Dice{
 }
 
 
-var background = document.getElementById("source");
-background_dim = [0.4, 0.4 * background.height / background.width]
+function game(id, tokens_center, dices_val, characters, areas, active_player){
+  var canvas = document.getElementById("game_canvas");
+  var canvas_ctx = canvas.getContext("2d");
 
-token = new Token("#00B7FF", [.1, .1]);
-dices = [new Dice(3, 4, [0.5, 0.4], 1), new Dice(4, 6, [.6, .4], 1)];
+  var background = document.getElementById("source");
+  var background_dim = [0.4, 0.4 * background.height / background.width]
 
+  dices = [new Dice(3, 4, [0.5, 0.4], dices_val[0]), new Dice(4, 6, [.6, .4], dices_val[1])];
 
-document.addEventListener('mousedown', e => {
-  token.hold = token.collide(...abs2rel(e.offsetX, e.offsetY));
-});
-document.addEventListener('mouseup', e => {
-  token.drop();
-});
-document.addEventListener('mousemove', e => {
-  if (token.hold){
-    token.center = abs2rel(e.offsetX, e.offsetY);
+  tokens = new Array(tokens_center.length);
+  for (var i = 0; i < characters.length; i++) {
+    tokens[2 * i] = new Token(PLAYERS[i], tokens_center[2 * i]);
+    tokens[2 * i + 1] = new Token(PLAYERS[i], tokens_center[2 * i + 1]);
   }
-});
-document.addEventListener('keydown', e => {
-  switch (e.key) {
-    case 'd':
-      roll_dice();
-      break;
-  }
-});
+  owned_tokens = [tokens[2 * id], tokens[2 * id + 1]]
 
 
-function update_display() {
-  canvas.width  = document.documentElement.clientWidth;
-  canvas.height = document.documentElement.clientHeight;
-  canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
+  timer_id = setInterval(() => {
+    canvas.width  = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+    canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  canvas_ctx.drawImage(background, 0, 0, ...rel2abs(background_dim));
+    canvas_ctx.drawImage(background, 0, 0, ...rel2abs(background_dim));
 
-  dices.forEach((dice, i) => {dice.draw_on(canvas_ctx);});
-  token.draw_on(canvas_ctx);
+    dices.forEach((dice, i) => {dice.draw_on(canvas_ctx);});
+
+    [...tokens].sort((a, b) => {
+      return 100 * (a.hold - b.hold)
+        + 10 * (a.center[1] - b.center[1] - a.offset[1] + b.offset[1])
+        + (a.center[0] - b.center[0] - a.offset[0] + b.offset[0])
+    }).forEach((token, i) => {token.draw_on(canvas_ctx);});
+  }, 100);
 }
