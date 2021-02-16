@@ -10,14 +10,7 @@ socket.on('init', (data) => {
     console.log("Connection denied by server");
     return;
   }
-  id = data['id'];
-  tokens_center = data['tokens_center'];
-  dices_val = data['dices_val'];
-  characters = data['characters'];
-  areas = data['areas'];
-  active_player = data['active_player'];
-
-  game(id, tokens_center, dices_val, characters, areas, active_player);
+  game(data['id'], data['tokens_center'], data['dices_val'], data['characters'], data['areas'], data['active_player']);
 });
 
 socket.on('token', (data) => {
@@ -243,7 +236,6 @@ class Dice{
     }
   }
 
-
   draw_on(ctx){
     if (this.roll_since != -1 && Date.now() - this.roll_since < Dice.ROLL_TIME){
       this.edges.forEach((edge, i) => {
@@ -282,12 +274,99 @@ class Dice{
 }
 
 
+class Area{
+  static WIDTH = 0.062;
+  static HEIGHT = 0.087;
+
+  static AREAS = [
+    {'values': [2, 3], 'name': "Antre de l'ermite", 'text': "Vous pouvez piocher\nune carte Vision"},
+    {'values': [4, 5], 'name': "Porte de l'Outremonde", 'text': "Vous pouvez piocher\nune carte dans la pile\nde votre choix"},
+    {'values': [6], 'name': "Monastère", 'text': "Vous pouvez piocher\nune carte Lumière"},
+    {'values': [8], 'name': "Cimetière", 'text': "Vous pouvez piocher\nune carte Ténèbres"},
+    {'values': [9], 'name': "Forêt hantée", 'text': "Le joueur de votre choix\npeut subir 2 blessures\nOU soigner 1 blessure"},
+    {'values': [10], 'name':  "Sanctuaire ancien", 'text': "Vous pouvez voler\nune carte équipement\nà un autre joueur"}
+  ]
+
+  static AREA_LOCATIONS = [
+    {'nw_position': [.266, .249], 'angle': -70},
+    {'nw_position': [.29, .186], 'angle': -70},
+    {'nw_position': [.215, .192], 'angle': 70},
+    {'nw_position': [.192, .13], 'angle': 70},
+    {'nw_position': [.254, .02], 'angle': 0},
+    {'nw_position': [.187, .02], 'angle': 0},
+  ]
+
+  constructor(i_area, i_slot){
+    this.angle = Math.PI * Area.AREA_LOCATIONS[i_slot]['angle'] / 180;
+    this.nw_position = Area.AREA_LOCATIONS[i_slot]['nw_position'];
+    this.values = Area.AREAS[i_area]['values'];
+    this.name = Area.AREAS[i_area]['name'];
+    this.text = Area.AREAS[i_area]['text'];
+  }
+
+  draw_on(ctx){
+    ctx.fillStyle = '#FFFF00';
+    ctx.save();
+    ctx.translate(...rel2abs(this.nw_position));
+    ctx.rotate(this.angle);
+    ctx.beginPath();
+    ctx.rect(0, 0, ...rel2abs(Area.WIDTH, Area.HEIGHT));
+    ctx.fill();
+    ctx.closePath();
+
+    if (this.values.length == 2) {
+      ctx.fillStyle = '#646464';
+      ctx.beginPath();
+      ctx.arc(...rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
+      ctx.arc(...rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
+      ctx.fill();
+      ctx.closePath();
+    } else {
+      ctx.fillStyle = '#646464';
+      ctx.beginPath();
+      ctx.arc(...rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    ctx.fillStyle = "#000000";
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 1vw Arial';
+    if (this.values.length == 2) {
+      ctx.fillText(this.values[0], ...rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .95));
+      ctx.fillText(this.values[1], ...rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .95));
+    } else {
+      ctx.fillText(this.values[0], ...rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .95));
+    }
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = 'bold 0.6vw Arial';
+    ctx.fillText(this.name, ...rel2abs(Area.WIDTH / 2, Area.HEIGHT * .4, Area.WIDTH * .95));
+    ctx.font = 'bold 0.5vw Arial';
+    fillTextMultiLine(ctx, this.text, ...rel2abs(0.007, Area.WIDTH / 2, Area.HEIGHT * .6, Area.WIDTH * .95));
+
+    ctx.restore();
+  }
+}
+
+
+function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
+  text.split('\n').forEach((line, i) => {
+    ctx.fillText(line, x, y, maxWidth);
+    y += lineHeight;
+  });
+}
+
+
 function game(id, tokens_center, dices_val, characters, areas, active_player){
   var canvas = document.getElementById("game_canvas");
   var canvas_ctx = canvas.getContext("2d");
 
   var background = document.getElementById("source");
   var background_dim = [0.4, 0.4 * background.height / background.width]
+
+  var areas = new Array(6);
+  for (var i = 0; i < areas.length; i++) {areas[i] = new Area(i, areas_order[i]);}
 
   dices = [new Dice(3, 4, [0.5, 0.4], dices_val[0]), new Dice(4, 6, [.6, .4], dices_val[1])];
 
@@ -305,6 +384,7 @@ function game(id, tokens_center, dices_val, characters, areas, active_player){
     canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas_ctx.drawImage(background, 0, 0, ...rel2abs(background_dim));
+    areas.forEach((area, i) => {area.draw_on(canvas_ctx);});
 
     dices.forEach((dice, i) => {dice.draw_on(canvas_ctx);});
 

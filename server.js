@@ -6,6 +6,17 @@ const port = 1616;
 const N_PLAYERS = 8;
 
 
+Object.defineProperty(Array.prototype, 'shuffle', {
+    value: function() {
+        for (let i = this.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this[i], this[j]] = [this[j], this[i]];
+        }
+        return this;
+    }
+});
+
+
 clients = new Array(N_PLAYERS).fill(null);
 
 tokens_center = new Array(2 * N_PLAYERS);
@@ -18,7 +29,7 @@ dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 
 
 characters = new Array(N_PLAYERS);
 
-areas = new Array(6);
+areas = [...Array(6).keys()].shuffle();
 
 active_player = 0;
 
@@ -32,9 +43,6 @@ for align in (0, 1, 2):
 		n_avail = game.Character.CHARACTERS_REPARTITION[_N_PLAYERS][align]
 		self.characters += [[align, i, False, []] for i in random.sample(range(n_total), n_avail)]
 random.shuffle(self.characters)
-
-self.areas = list(range(6))
-random.shuffle(self.areas)
 
 self.active_player = 0  # Todo
 # self.active_player = random.randrange(_N_PLAYERS)
