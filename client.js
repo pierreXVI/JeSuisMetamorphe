@@ -81,42 +81,6 @@ function take(i_player, i_equipment){
 }
 
 
-document.addEventListener('mousedown', e => {
-  owned_tokens.sort((a, b) => {return 10 * (b.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
-  for (var i = 0; i < owned_tokens.length; i++) {
-    owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(e.offsetX, e.offsetY));
-    if (owned_tokens[i].hold){
-      return;
-    }
-  }
-});
-
-document.addEventListener('mouseup', e => {
-  owned_tokens.forEach((token, i) => {
-    if (token.hold) {
-      token.drop();
-      send_token(tokens.indexOf(token), token.center);
-    }
-  });
-});
-
-document.addEventListener('mousemove', e => {
-  owned_tokens.forEach((token, i) => {
-    if (token.hold){
-      token.center = abs2rel(e.offsetX, e.offsetY);
-    }
-  });
-});
-
-document.addEventListener('keydown', e => {
-  switch (e.key) {
-    case 'd':
-      roll_dice();
-      break;
-  }
-});
-
-
 function rel2abs(){
   if (arguments.length == 1){
     if (arguments[0] instanceof Array){
@@ -285,7 +249,7 @@ class Area{
     {'values': [8], 'name': "Cimetière", 'text': "Vous pouvez piocher\nune carte Ténèbres"},
     {'values': [9], 'name': "Forêt hantée", 'text': "Le joueur de votre choix\npeut subir 2 blessures\nOU soigner 1 blessure"},
     {'values': [10], 'name':  "Sanctuaire ancien", 'text': "Vous pouvez voler\nune carte équipement\nà un autre joueur"}
-  ]
+  ];
 
   static AREA_LOCATIONS = [
     {'nw_position': [.266, .249], 'angle': -70},
@@ -350,6 +314,267 @@ class Area{
 }
 
 
+class Character{
+  static WIDTH = .1
+  static HEIGHT = .15
+  static MARGIN = .01
+
+  static CHARACTERS = {
+    'Shadow': [
+      {'name': 'Métamorphe',
+      'hp': 11,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Pouvoir permanent : Imitation",
+      'ability_desc': "Vous pouvez mentir (sans\navoir à révéler votre identité)\nlorsqu'on vous donne\nune carte Vision."},
+      {'name': 'Momie',
+      'hp': 11,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Capacité spéciale :\nRayon d'Outremonde",
+      'ability_desc': "Au début de votre tour,\nvous pouvez infliger 3 Blessures\nà un joueur présent dans le Lieu\nPorte de l'Outremonde."},
+      {'name': 'Vampire',
+      'hp': 13,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Capacité spéciale : Morsure",
+      'ability_desc': "Si vous attaquez un joueur\net lui infligez des Blessures,\nsoignez immédiatement\n2 de vos Blessures."},
+      {'name': 'Valkyrie',
+      'hp': 13,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Capacité spéciale : Chant de guerre",
+      'ability_desc': "Quand vous attaquez,\nlancez seulement le dé à 4 faces\npour déterminer les dégats."},
+      {'name': 'Loup-Garou',
+      'hp': 14,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Capacité spéciale : Contre-attaque",
+      'ability_desc': "Après avoir subi l'attaque\nd'un joueur, vous pouvez\ncontre-attaquer immédiatement."},
+      {'name': 'Liche',
+      'hp': 14,
+      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
+      'ability': "Capacité spéciale : Nécromancie",
+      'ability_desc': "Vous pouvez rejouer autant de fois\nqu'il y a de personnages morts.\nUtilisation unique."}
+    ],
+    'Neutral': [
+      {'name': 'Allie',
+      'hp': 8,
+      'victory': "Etre encore en vie lorsque\nla partie se termine.",
+      'ability': "Capacité spéciale : Amour maternel",
+      'ability_desc': "Soignez toutes vos blessures.\nUtilisation unique."},
+      {'name': 'Agnes',
+      'hp': 8,
+      'victory': "Le joueur à votre droite gagne.",
+      'ability': "Capacité spéciale : Caprice",
+      'ability_desc': "Au début de votre tour, changez\nvotre condition de victoire par :\n\"Le joueur à votre gauche gagne\""},
+      {'name': 'Daniel',
+      'hp': 13,
+      'victory': "Etre le premier à mourir\nOU être en vie quand tous\nles personnages Shadow\nsont morts.",
+      'ability': "Particularité : Désespoir",
+      'ability_desc': "Dès qu'un personnage meurt,\nvous devez révéler\nvotre identité."},
+      {'name': 'David',
+      'hp': 13,
+      'victory': "Avoir au minimum 3 de ces cartes :\nCrucifix en argent, Amulette,\nLance de Longinus, Toge sainte.",
+      'ability': "Capacité spéclass :\nPilleur de tombes",
+      'ability_desc': "Récupérez dans la défausse la\ncarte équipement de votre choix.\nUtilisation unique."},
+      {'name': 'Charles',
+      'hp': 11,
+      'victory': "Tuer un personnage par\nune attaque alors qu'il y a\ndéjà eu 3 morts ou plus.",
+      'ability': "Capacité spéciale : Festin sanglant",
+      'ability_desc': "Après votre attaque, vous pouvez\nvous infliger 2 Blessures afin\nd'attaquer de nouveau\nle même joueur."},
+      {'name': 'Catherine',
+      'hp': 11,
+      'victory': "Être la première à mourir\nOU être l'un des deux\nseuls personnages en vie.",
+      'ability': "Capacité spéciale : Stigmates",
+      'ability_desc': "Guerissez de 1 Blessure\nau début de votre tour."},
+      {'name': 'Bryan',
+      'hp': 10,
+      'victory': "Tuer un personnage de\n13 Points de Vie ou plus,\nOU être dans le Sanctuaire ancien\nà la fin du jeu.",
+      'ability': "Particularité : Oh my god !",
+      'ability_desc': "Si vous tuez un personnage de\n12 Points de Vie ou moins,\nvous devez révéler votre identité."},
+      {'name': 'Bob',
+      'hp': 10,
+      'victory': "Posséder 5 cartes équipements\nou plus.",
+      'ability': "Capacité spéciale : Braquage",
+      'ability_desc': "Si vous tuez un personnage,\nvous pouvez récupérer\ntoutes ses cartes équipements."}
+    ],
+    'Hunter': [
+      {'name': 'Emi',
+      'hp': 10,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale : Téléportation",
+      'ability_desc': "Pour vous déplacer, vous pouvez\nlancer normalement les dés,\nou vous déplacer sur\nla carte lieu adjacente."},
+      {'name': 'Ellen',
+      'hp': 10,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale : Exorcisme",
+      'ability_desc': "Au début de votre tour,\nvous pouvez désigner un joueur.\nIl perd sa capacité spéciale\njusqu'à la fin de la partie.\nUtilisation unique."},
+      {'name': 'Georges',
+      'hp': 14,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale : Démolition",
+      'ability_desc': "Au début de votre tour, choisissez\nun joueur et infligez lui autant\nde blessures que le résultat\nd'un dé à 4 faces.\nUtilisation unique."},
+      {'name': 'Gregor',
+      'hp': 14,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale :\nBouclier fantôme",
+      'ability_desc': "Ce pouvoir peut s'activer à la fin\nde votre tour. Vous ne subissez\naucune Blessure jusqu'au début\nde votre prochain tour.\nUtilisation unique."},
+      {'name': 'Franklin',
+      'hp': 12,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale : Poudre",
+      'ability_desc': "Au début de votre tour, choisissez\nun joueur et infligez lui autant\nde blessures que le résultat\nd'un dé à 6 faces.\nUtilisation unique."},
+      {'name': 'Fu-Ka',
+      'hp': 12,
+      'victory': "Tous les personnages Shadow\nsont morts.",
+      'ability': "Capacité spéciale :\nSoins particuliers",
+      'ability_desc': "Au début de votre tour,\nplacez le marqueur\nde Blessures d'un joueur sur 7.\nUtilisation unique."}
+    ]
+  };
+
+  constructor(align, i_character, revealed, equipments, nw_position, i_player){
+    this.revealed = revealed
+    this.nw_position = nw_position
+    this.i_player = i_player
+    // self.equipments = [(card.TYPES[e[0]], e[1]) for e in equipments]
+    //
+    // self.card_back = pygame.surface.Surface((self.WIDTH + 2 * self.MARGIN, self.HEIGHT + 2 * self.MARGIN),
+    //                                         flags=pygame.HWSURFACE | pygame.DOUBLEBUF)
+    // self.card_back.fill(PLAYERS[i_player][1])
+    //
+    // self.card = pygame.surface.Surface((self.WIDTH + 2 * self.MARGIN, self.HEIGHT + 2 * self.MARGIN),
+    //                                    flags=pygame.HWSURFACE | pygame.DOUBLEBUF)
+    // self.card.fill(PLAYERS[i_player][1])
+    // self.card.fill((255, 255, 255), (self.MARGIN, self.MARGIN, self.WIDTH, self.HEIGHT))
+    //
+    // color = (255, 0, 0) if align == 0 else (0, 0, 255) if align == 2 else (240, 150, 50)
+    // character = Character.CHARACTERS[align][i_character]
+    //
+    // pygame.draw.circle(self.card, color, (30, 30), 15)
+    // font = pygame.font.SysFont('dejavuserif', 20)
+    // text = font.render(character[0][0], True, (0, 0, 0))
+    // self.card.blit(text, (30 - text.get_width() / 2, 30 - text.get_height() / 2))
+    // font = pygame.font.SysFont('dejavuserif', 14)
+    // text = font.render(character[0][1:], True, (0, 0, 0))
+    // self.card.blit(text, (30 + 15, 30))
+    //
+    // pygame.draw.circle(self.card, (255, 0, 0), (self.WIDTH - 15, 25), 10)
+    // text = font.render(str(character[1]), True, (0, 0, 0))
+    // self.card.blit(text, (self.WIDTH - 15 - text.get_width() / 2, 25 - text.get_height() / 2))
+    // text = font.render("PV", True, (0, 0, 0))
+    // self.card.blit(text, (self.WIDTH - 15 - 10 - text.get_width(), 25 - text.get_height() / 2))
+    //
+    // font = pygame.font.SysFont('dejavuserif', 10)
+    // y = render_text("Condition de victoire :", font, color, self.card, 'c', self.MARGIN + self.WIDTH / 2, 75)
+    // y = render_text(character[2], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
+    // y = render_text(character[3], font, color, self.card, 'c', self.MARGIN + self.WIDTH / 2, y + 20)
+    // _ = render_text(character[4], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
+  }
+
+  collide(loc){
+    // return self.card.get_rect().collidepoint(loc[0] - self.nw_position[0], loc[1] - self.nw_position[1])
+  }
+
+  draw_on(ctx){
+    if (this.revealed) {
+
+    } else {
+      ctx.fillStyle = PLAYERS[this.i_player];
+      ctx.beginPath();
+      ctx.rect(...rel2abs(...this.nw_position, Character.WIDTH, Character.HEIGHT));
+      ctx.fill();
+      ctx.stroke();
+      ctx.closePath();
+
+    }
+  }
+
+  reveal(){
+    // if not self.revealed:
+    //   class RevealPopup(popup.Popup):
+    //     def __init__(self, game):
+    //       super().__init__(game)
+    //       self.answer = False
+    //       tkinter.Label(self, text="Voulez vous vraiment vous révéler ?",
+    //                     wraplength=200, padx=30, pady=10, font=(None, 16)).pack()
+    //       tkinter.Button(self, text="Oui", padx=30, pady=10, command=self.answer_yes) \
+    //           .pack(side=tkinter.LEFT, padx=30, pady=30)
+    //       tkinter.Button(self, text="Non", padx=30, pady=10, command=self.answer_no) \
+    //           .pack(side=tkinter.RIGHT, padx=30, pady=30)
+    //       self.center()
+    //       self.show()
+    //
+    //     def answer_yes(self):
+    //       self.answer = True
+    //       self.destroy()
+    //
+    //     def answer_no(self):
+    //       self.answer = False
+    //       self.destroy()
+    //
+    //   return RevealPopup(self.game).answer
+    // return False
+  }
+
+  inventory(){
+        // class InventoryPopup(popup.Popup):
+        //     def __init__(self, game, character):
+        //         super().__init__(game)
+        //         self.character = character
+        //
+        //         self.label = tkinter.Label(self, text='', wraplength=600, padx=30, pady=10, font=(None, 16))
+        //         self.listbox = tkinter.Listbox(self, selectmode=tkinter.SINGLE)
+        //         self.button_take = tkinter.Button(self, text="Prendre équipement", padx=30, pady=10, command=self.take)
+        //         self.button_ok = tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy)
+        //         self.update_widgets()
+        //
+        //         self.show()
+        //
+        //     def update_widgets(self):
+        //         self.label.pack_forget()
+        //         self.listbox.pack_forget()
+        //         self.button_take.pack_forget()
+        //         self.button_ok.pack_forget()
+        //
+        //         self.listbox.delete(0, tkinter.END)
+        //         self.listbox.config(width=0, height=0)
+        //         if self.character.equipments:
+        //             self.label.config(text="Le joueur {0} possède les équipements :"
+        //                               .format(PLAYERS[self.character.i_player][0]))
+        //
+        //             for equip in self.character.equipments:
+        //                 c = equip[0].CARDS[equip[1]]
+        //                 self.listbox.insert(tkinter.END, '{0} : {1}'.format(c[0], c[2]))
+        //
+        //             self.label.pack()
+        //             self.listbox.pack()
+        //             if self._game.client.i != self.character.i_player:
+        //                 self.button_take.pack()
+        //         else:
+        //             self.label.config(text="Le joueur {0} ne possède pas d'équipement"
+        //                               .format(PLAYERS[self.character.i_player][0]))
+        //
+        //             self.label.pack()
+        //
+        //         self.button_ok.pack()
+        //         self.center()
+        //
+        //     def callback(self):
+        //         """
+        //         Update the listbox
+        //
+        //         Returns:
+        //             None
+        //         """
+        //         if self.listbox.size() != len(self.character.equipments):
+        //             self.update_widgets()
+        //
+        //     def take(self):
+        //         ids = self.listbox.curselection()
+        //         if ids:
+        //             self._game.client.take_equipment(self.character.i_player, ids[0])
+        //
+        // return InventoryPopup(self.game, self)
+  }
+}
+
+
 function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
   text.split('\n').forEach((line, i) => {
     ctx.fillText(line, x, y, maxWidth);
@@ -358,7 +583,7 @@ function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
 }
 
 
-function game(id, tokens_center, dices_val, characters, areas, active_player){
+function game(id, tokens_center, dices_val, characters_data, areas_order, active_player){
   var canvas = document.getElementById("game_canvas");
   var canvas_ctx = canvas.getContext("2d");
 
@@ -368,14 +593,56 @@ function game(id, tokens_center, dices_val, characters, areas, active_player){
   var areas = new Array(6);
   for (var i = 0; i < areas.length; i++) {areas[i] = new Area(i, areas_order[i]);}
 
-  dices = [new Dice(3, 4, [0.5, 0.4], dices_val[0]), new Dice(4, 6, [.6, .4], dices_val[1])];
+  dices = [new Dice(3, 4, [0.5, 0.1], dices_val[0]), new Dice(4, 6, [.5, .2], dices_val[1])];
 
   tokens = new Array(tokens_center.length);
-  for (var i = 0; i < characters.length; i++) {
+  for (var i = 0; i < characters_data.length; i++) {
     tokens[2 * i] = new Token(PLAYERS[i], tokens_center[2 * i]);
     tokens[2 * i + 1] = new Token(PLAYERS[i], tokens_center[2 * i + 1]);
   }
   owned_tokens = [tokens[2 * id], tokens[2 * id + 1]]
+
+  characters = new Array(characters_data.length);
+  characters_data.forEach((character, i) => {
+    characters[i] = new Character(character['align'], character['i'], character['reveal'], character['equipments'],
+      [Character.MARGIN + i * (Character.MARGIN + Character.WIDTH), .35], i);
+  });
+
+
+  document.addEventListener('mousedown', e => {
+    owned_tokens.sort((a, b) => {return 10 * (b.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
+    for (var i = 0; i < owned_tokens.length; i++) {
+      owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(e.offsetX, e.offsetY));
+      if (owned_tokens[i].hold){
+        return;
+      }
+    }
+  });
+
+  document.addEventListener('mouseup', e => {
+    owned_tokens.forEach((token, i) => {
+      if (token.hold) {
+        token.drop();
+        send_token(tokens.indexOf(token), token.center);
+      }
+    });
+  });
+
+  document.addEventListener('mousemove', e => {
+    owned_tokens.forEach((token, i) => {
+      if (token.hold){
+        token.center = abs2rel(e.offsetX, e.offsetY);
+      }
+    });
+  });
+
+  document.addEventListener('keydown', e => {
+    switch (e.key) {
+      case 'd':
+        roll_dice();
+        break;
+    }
+  });
 
 
   timer_id = setInterval(() => {
@@ -387,6 +654,8 @@ function game(id, tokens_center, dices_val, characters, areas, active_player){
     areas.forEach((area, i) => {area.draw_on(canvas_ctx);});
 
     dices.forEach((dice, i) => {dice.draw_on(canvas_ctx);});
+
+    characters.forEach((character, i) => {character.draw_on(canvas_ctx);});
 
     [...tokens].sort((a, b) => {
       return 100 * (a.hold - b.hold)

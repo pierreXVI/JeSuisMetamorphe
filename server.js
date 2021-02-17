@@ -2,8 +2,18 @@ const http     = require('http');
 const express  = require('express');
 const socketIO = require('socket.io');
 
-const port = 1616;
+const PORT = 1616;
+
 const N_PLAYERS = 8;
+
+const N_CHARACTERS = {'Shadow': 6, 'Neutral': 8, 'Hunter': 6};
+const CHARACTERS_REPARTITION = {
+		4: {'Shadow': 2, 'Neutral': 0, 'Hunter': 2},
+		5: {'Shadow': 2, 'Neutral': 1, 'Hunter': 2},
+		6: {'Shadow': 2, 'Neutral': 2, 'Hunter': 2},
+		7: {'Shadow': 3, 'Neutral': 1, 'Hunter': 3},
+		8: {'Shadow': 3, 'Neutral': 2, 'Hunter': 3}
+};
 
 
 Object.defineProperty(Array.prototype, 'shuffle', {
@@ -27,7 +37,14 @@ for (var i = 0; i < N_PLAYERS; i++) {
 
 dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
 
-characters = new Array(N_PLAYERS);
+characters = [];
+if (N_PLAYERS >= 7){N_CHARACTERS['Neutral'] = N_CHARACTERS['Neutral'] - 1;} // Removing Bob for 7 and 8 players
+for (var align in N_CHARACTERS) {
+	[...Array(N_CHARACTERS[align]).keys()].shuffle().slice(0, CHARACTERS_REPARTITION[N_PLAYERS][align]).forEach((i_character, i) => {
+		characters.push({'align': align, 'i': i_character, 'revealed':false, 'equipments':[]});
+	});
+}
+characters.shuffle();
 
 areas = [...Array(6).keys()].shuffle();
 
@@ -35,15 +52,6 @@ active_player = 0;
 
 
 /*
-self.characters = []
-if _N_PLAYERS >= 7:  # Removing Bob for 7 and 8 players
-		game.Character.CHARACTERS[1 + 0].pop(4)
-for align in (0, 1, 2):
-		n_total = len(game.Character.CHARACTERS[align])
-		n_avail = game.Character.CHARACTERS_REPARTITION[_N_PLAYERS][align]
-		self.characters += [[align, i, False, []] for i in random.sample(range(n_total), n_avail)]
-random.shuffle(self.characters)
-
 self.active_player = 0  # Todo
 # self.active_player = random.randrange(_N_PLAYERS)
 
@@ -56,7 +64,7 @@ for c in self.cards:
 let app = express();
 app.use(express.static('.'));
 let http_server = http.createServer(app);
-http_server.listen(port, () => {console.log("Server started on port", port)});
+http_server.listen(PORT, () => {console.log("Server started on port", PORT)});
 
 
 let io = socketIO(http_server);
