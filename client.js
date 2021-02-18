@@ -315,9 +315,10 @@ class Area{
 
 
 class Character{
-  static WIDTH = .1
+  static WIDTH = .11
   static HEIGHT = .15
-  static MARGIN = .01
+  static BORDER = .004
+  static MARGIN = .005
 
   static CHARACTERS = {
     'Shadow': [
@@ -428,61 +429,85 @@ class Character{
     ]
   };
 
-  constructor(align, i_character, revealed, equipments, nw_position, i_player){
-    this.revealed = revealed
-    this.nw_position = nw_position
-    this.i_player = i_player
+  constructor(align, i_character, revealed, equipments, nw_position, i_player, i_client){
+    this.align = align;
+    this.character = Character.CHARACTERS[align][i_character]
+    this.revealed = revealed;
+    this.nw_position = nw_position;
+    this.i_player = i_player;
+    this.i_client = i_client;
+    this.show = false;
     // self.equipments = [(card.TYPES[e[0]], e[1]) for e in equipments]
     //
-    // self.card_back = pygame.surface.Surface((self.WIDTH + 2 * self.MARGIN, self.HEIGHT + 2 * self.MARGIN),
-    //                                         flags=pygame.HWSURFACE | pygame.DOUBLEBUF)
-    // self.card_back.fill(PLAYERS[i_player][1])
-    //
-    // self.card = pygame.surface.Surface((self.WIDTH + 2 * self.MARGIN, self.HEIGHT + 2 * self.MARGIN),
-    //                                    flags=pygame.HWSURFACE | pygame.DOUBLEBUF)
-    // self.card.fill(PLAYERS[i_player][1])
-    // self.card.fill((255, 255, 255), (self.MARGIN, self.MARGIN, self.WIDTH, self.HEIGHT))
-    //
-    // color = (255, 0, 0) if align == 0 else (0, 0, 255) if align == 2 else (240, 150, 50)
-    // character = Character.CHARACTERS[align][i_character]
-    //
-    // pygame.draw.circle(self.card, color, (30, 30), 15)
-    // font = pygame.font.SysFont('dejavuserif', 20)
-    // text = font.render(character[0][0], True, (0, 0, 0))
-    // self.card.blit(text, (30 - text.get_width() / 2, 30 - text.get_height() / 2))
-    // font = pygame.font.SysFont('dejavuserif', 14)
-    // text = font.render(character[0][1:], True, (0, 0, 0))
-    // self.card.blit(text, (30 + 15, 30))
-    //
-    // pygame.draw.circle(self.card, (255, 0, 0), (self.WIDTH - 15, 25), 10)
-    // text = font.render(str(character[1]), True, (0, 0, 0))
-    // self.card.blit(text, (self.WIDTH - 15 - text.get_width() / 2, 25 - text.get_height() / 2))
-    // text = font.render("PV", True, (0, 0, 0))
-    // self.card.blit(text, (self.WIDTH - 15 - 10 - text.get_width(), 25 - text.get_height() / 2))
-    //
-    // font = pygame.font.SysFont('dejavuserif', 10)
-    // y = render_text("Condition de victoire :", font, color, self.card, 'c', self.MARGIN + self.WIDTH / 2, 75)
     // y = render_text(character[2], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
     // y = render_text(character[3], font, color, self.card, 'c', self.MARGIN + self.WIDTH / 2, y + 20)
     // _ = render_text(character[4], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
   }
 
-  collide(loc){
-    // return self.card.get_rect().collidepoint(loc[0] - self.nw_position[0], loc[1] - self.nw_position[1])
+  collide(x, y){
+    return (x - this.nw_position[0] > 0 && x - this.nw_position[0] < Character.WIDTH
+      && y - this.nw_position[1] > 0 && y - this.nw_position[1] < Character.HEIGHT);
   }
 
   draw_on(ctx){
-    if (this.revealed) {
+    ctx.save();
+    ctx.translate(...rel2abs(this.nw_position));
 
-    } else {
-      ctx.fillStyle = PLAYERS[this.i_player];
+    ctx.fillStyle = PLAYERS[this.i_player];
+    ctx.beginPath();
+    ctx.rect(...rel2abs(-Character.BORDER, -Character.BORDER,
+      Character.WIDTH + 2 * Character.BORDER, Character.HEIGHT + 2 * Character.BORDER));
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    if (this.revealed || this.show) {
+      ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.rect(...rel2abs(...this.nw_position, Character.WIDTH, Character.HEIGHT));
+      ctx.rect(0, 0, ...rel2abs(Character.WIDTH, Character.HEIGHT));
       ctx.fill();
-      ctx.stroke();
       ctx.closePath();
 
+      ctx.fillStyle = this.align == 'Shadow' ? '#FF0000' : this.align == 'Hunter' ? '#0000FF' : '#F09632';
+      ctx.beginPath();
+      ctx.arc(...rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1,  Character.WIDTH * .08), 0, 2 * Math.PI, false);
+      ctx.fill();
+      ctx.closePath();
+      ctx.fillStyle = "#000000";
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 1.2vw Arial';
+      ctx.fillText(this.character['name'][0], ...rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1));
+      ctx.textAlign = 'left';
+      ctx.fillText(this.character['name'].slice(1, this.character['name'].length),
+        ...rel2abs(Character.WIDTH * .18, Character.HEIGHT * .12));
+
+      ctx.fillStyle = '#FF0000';
+      ctx.beginPath();
+      ctx.arc(...rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08,  Character.WIDTH * .07), 0, 2 * Math.PI, false);
+      ctx.fill();
+      ctx.closePath();
+      ctx.fillStyle = "#000000";
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 1vw Arial';
+      ctx.fillText(this.character['hp'], ...rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08));
+      ctx.textAlign = 'right';
+      ctx.fillText("PV", ...rel2abs(Character.WIDTH * .83, Character.HEIGHT * .08));
+
+      ctx.fillStyle = "#000000";
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.font = 'bold 1vw Arial';
+      ctx.fillText("Condition de victoire :", ...rel2abs(Character.WIDTH * .5, Character.HEIGHT * .3, Character.WIDTH * .95));
+      ctx.font = '.8vw Arial';
+      fillTextMultiLine(ctx, this.character['victory'], ...rel2abs(.007, Character.WIDTH * .5, Character.HEIGHT * .37, Character.WIDTH * .95));
+      ctx.font = 'bold 1vw Arial';
+      var y = Character.HEIGHT * .6;
+      y = fillTextMultiLine(ctx, this.character['ability'], ...rel2abs(.01, Character.WIDTH * .5, y, Character.WIDTH * .95));
+      ctx.font = '.8vw Arial';
+      fillTextMultiLine(ctx, this.character['ability_desc'], ...rel2abs(.007, Character.WIDTH * .5, abs2rel(y), Character.WIDTH * .95));
     }
+    ctx.restore();
   }
 
   reveal(){
@@ -580,6 +605,7 @@ function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
     ctx.fillText(line, x, y, maxWidth);
     y += lineHeight;
   });
+  return y;
 }
 
 
@@ -605,7 +631,7 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
   characters = new Array(characters_data.length);
   characters_data.forEach((character, i) => {
     characters[i] = new Character(character['align'], character['i'], character['reveal'], character['equipments'],
-      [Character.MARGIN + i * (Character.MARGIN + Character.WIDTH), .35], i);
+      [Character.MARGIN + Character.BORDER + i * (Character.WIDTH + 2 * Character.BORDER + Character.MARGIN), .35], i, id);
   });
 
 
@@ -634,6 +660,8 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
         token.center = abs2rel(e.offsetX, e.offsetY);
       }
     });
+
+    characters[id].show = characters[id].collide(...abs2rel(e.offsetX, e.offsetY));
   });
 
   document.addEventListener('keydown', e => {
