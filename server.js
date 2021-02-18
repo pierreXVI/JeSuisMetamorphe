@@ -62,7 +62,7 @@ for c in self.cards:
 
 
 let app = express();
-app.use(express.static('.'));
+app.use(express.static(__dirname));
 let http_server = http.createServer(app);
 http_server.listen(PORT, () => {console.log("Server started on port", PORT)});
 
