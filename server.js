@@ -98,12 +98,9 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('reveal', (data) => {
-		console.log(data);
-		// print("Player {0} came out of the closet".format(game.PLAYERS[self.i][0]))
-		// self.server.characters[self.i][2] = True
-		// for client in self.server.clients:
-		// 		if client is not None:
-		// 				comm.send(client, ['reveal', self.i])
+		console.log("Player", i, "came out of the closet");
+		characters[i]['revealed'] = true;
+		io.emit('reveal', i)
 
 	});
 

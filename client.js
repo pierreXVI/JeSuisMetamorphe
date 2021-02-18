@@ -23,8 +23,7 @@ socket.on('dices', (data) => {
 });
 
 socket.on('reveal', (data) => {
-  console.log(data);
-  // self.game.characters[msg[1]].revealed = True
+  characters[data].revealed = true;
 });
 
 socket.on('turn', (data) => {
@@ -511,30 +510,7 @@ class Character{
   }
 
   reveal(){
-    // if not self.revealed:
-    //   class RevealPopup(popup.Popup):
-    //     def __init__(self, game):
-    //       super().__init__(game)
-    //       self.answer = False
-    //       tkinter.Label(self, text="Voulez vous vraiment vous révéler ?",
-    //                     wraplength=200, padx=30, pady=10, font=(None, 16)).pack()
-    //       tkinter.Button(self, text="Oui", padx=30, pady=10, command=self.answer_yes) \
-    //           .pack(side=tkinter.LEFT, padx=30, pady=30)
-    //       tkinter.Button(self, text="Non", padx=30, pady=10, command=self.answer_no) \
-    //           .pack(side=tkinter.RIGHT, padx=30, pady=30)
-    //       self.center()
-    //       self.show()
-    //
-    //     def answer_yes(self):
-    //       self.answer = True
-    //       self.destroy()
-    //
-    //     def answer_no(self):
-    //       self.answer = False
-    //       self.destroy()
-    //
-    //   return RevealPopup(self.game).answer
-    // return False
+    return (! this.revealed) && confirm("Voulez vous vraiment vous révéler ?");
   }
 
   inventory(){
@@ -630,7 +606,7 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
 
   characters = new Array(characters_data.length);
   characters_data.forEach((character, i) => {
-    characters[i] = new Character(character['align'], character['i'], character['reveal'], character['equipments'],
+    characters[i] = new Character(character['align'], character['i'], character['revealed'], character['equipments'],
       [Character.MARGIN + Character.BORDER + i * (Character.WIDTH + 2 * Character.BORDER + Character.MARGIN), .35], i, id);
   });
 
@@ -668,6 +644,11 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
     switch (e.key) {
       case 'd':
         roll_dice();
+        break;
+      case 'r':
+        if (characters[id].reveal()) {
+          reveal();
+        }
         break;
     }
   });
