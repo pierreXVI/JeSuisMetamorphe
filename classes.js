@@ -451,3 +451,231 @@ class Character{
         // return InventoryPopup(self.game, self)
   }
 }
+
+
+class Card{
+  static WIDTH = .11;
+  static HEIGHT = .15;
+
+  static CARDS = [];
+
+  constructor(nw_position, color){
+    this.nw_position = nw_position;
+    this.color = color;
+  }
+
+  collide(x, y){
+    return (x - this.nw_position[0] > 0 && x - this.nw_position[0] < Card.WIDTH
+      && y - this.nw_position[1] > 0 && y - this.nw_position[1] < Card.HEIGHT);
+  }
+
+  draw_on(ctx){
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.rect(...rel2abs(...this.nw_position, Card.WIDTH, Card.HEIGHT));
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+  }
+
+  draw_card(){}
+}
+
+class BlackCard extends Card {
+
+  static CARDS = [
+    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
+    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
+    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
+    {'name': "Succube tentatrice",    'equip': false, 'desc': "Volez une carte équipement au joueur de votre choix."},
+    {'name': "Succube tentatrice",    'equip': false, 'desc': "Volez une carte équipement au joueur de votre choix."},
+    {'name': "Araignée sanguinaire",  'equip': false, 'desc': "Vous infligez 2 Blessures au personnage de votre choix, puis vous subissez vous-même 2 Blessures."},
+    {'name': "Poupée démoniaque",     'equip': false, 'desc': "Désignez un joueur et lancez le dé à 6 faces. 1 à 4 : infligez lui 3 Blessures. 5 ou 6 subissez 3 Blessures."},
+    {'name': "Dynamite",              'equip': false, 'desc': "Lancez les 2 dés et infligez 3 Blessures à tous les joueurs (vous compris) se trouvant dans le secteur désigné par le total des 2 dés. Il ne se passe rien si ce total est 7."},
+    {'name': "Rituel diabolique",     'equip': false, 'desc': "Si vous êtes un Shadow, et si vous décidez de révéler (ou avez déjà révélé) votre identité, soignez toutes vos Blessures."},
+    {'name': "Peau de banane",        'equip': false, 'desc': "Donnez une de vos cartes équipements à un autre personnage. Si vous n'en possédez aucune, vous encaissez 1 Blessure."},
+    {'name': "Tronçonneuse du mal",   'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
+    {'name': "Hachoir maudit",        'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
+    {'name': "Hache tueuse",          'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
+    {'name': "Revolver des ténèbres", 'equip': true,  'desc': "Vous pouvez attaquer un joueur présent sur l'un des 4 lieux hors de votre secteur, mais vous ne pouvez plus attaquer un joueur situé dans le même secteur que vous."},
+    {'name': "Sabre hanté Masamuné",  'equip': true,  'desc': "Vous êtes obligé d'attaquer durant votre tour. Lancez uniquement le dé à 4 faces, le résultat indique les Blessures que vous infligez."},
+    {'name': "Mitrailleuse funeste",  'equip': true,  'desc': "Votre attaque affecte tous les personnages qui sont à votre porté. Effectuez un seul jet de Blessures pour tous les joueurs concernés."}
+  ]
+
+  constructor(nw_position) {
+    super(nw_position, '#141414');
+  }
+
+  draw_card(){
+    /*
+    card = self.CARDS[i_card]
+
+    if card[1]:
+        self.game.characters[i_player].equipments.append((self.__class__, i_card))
+
+    class DrawDarkPopup(popup.Popup):
+        def __init__(self, game_instance):
+            super().__init__(game_instance)
+
+            tkinter.Label(self, text="Le joueur {0} pioche la carte :".format(game.PLAYERS[i_player][0]),
+                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
+            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
+
+            self.center()
+            self.show()
+
+    DrawDarkPopup(self.game)
+    */
+  }
+}
+
+class VisionCard extends Card {
+
+  static CARDS = [
+    {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
+    {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
+    {'name': "Vision enivrante",     'desc1': "Je pense que tu es Neutre ou Hunter",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure"},
+    {'name': "Vision enivrante",     'desc1': "Je pense que tu es Neutre ou Hunter",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure"},
+    {'name': "Vision furtive",       'desc1': "Je pense que tu es Hunter ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
+    {'name': "Vision furtive",       'desc1': "Je pense que tu es Hunter ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
+    {'name': "Vision mortifère",     'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
+    {'name': "Vision mortifère",     'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
+    {'name': "Vision destructrice",  'desc1': "Je pense que tu es un personnage de 12 Points de vie ou plus",  'desc2': "Si c'est le cas, subis 2 Blessures !"},
+    {'name': "Vision clairvoyante",  'desc1': "Je pense que tu es un personnage de 11 Points de vie ou moins", 'desc2': "Si c'est le cas, subis 1 Blessures !"},
+    {'name': "Vision divine",        'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
+    {'name': "Vision réconfortante", 'desc1': "Je pense que tu es Neutre",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
+    {'name': "Vision lugubre",       'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
+    {'name': "Vision foudroyante",   'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
+    {'name': "Vision purificatrice", 'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 2 Blessures !"},
+    {'name': "Vision suprème",       'desc1': "",                                                              'desc2': "Monte moi secrètement ta carte Personnage !"}
+  ]
+
+  constructor(nw_position) {
+    super(nw_position, '#00FF00');
+  }
+
+  draw_card(){
+    /*
+    card = self.CARDS[i_card]
+
+    class DrawVisionPopup(popup.Popup):
+        def __init__(self, game_instance):
+            super().__init__(game_instance)
+            self.i = -1
+
+            tkinter.Label(self, text="A quel joueur voulez vous donner cette vision ?",
+                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
+            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+            tkinter.Label(self, text=card[1], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+
+            frame = tkinter.Frame(self)
+            self.var = tkinter.IntVar()
+            self.var.set(-1)
+            for i in range(len(game.PLAYERS)):
+                if i != self._game.client.i:
+                    tkinter.Radiobutton(frame, text=game.PLAYERS[i][0], variable=self.var, value=i).grid(
+                        row=i // 4, column=i % 4, sticky=tkinter.W, padx=10, pady=10)
+            frame.pack()
+
+            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.answer).pack(padx=30, pady=30)
+
+            self.center()
+            self.show()
+
+        def answer(self):
+            self.i = self.var.get()
+            if self.i >= 0:
+                self.destroy()
+
+    return DrawVisionPopup(self.game).i
+    */
+  }
+
+  answer(){
+    /*
+    def answer(self, i_card, i_from):
+        """
+        Answer the vision i_card from player i_from
+
+        Args:
+            i_card (int)
+            i_from (int)
+
+        Returns:
+            None
+        """
+        card = self.CARDS[i_card]
+
+        class AnswerVisionPopup(popup.Popup):
+            def __init__(self, game_instance):
+                super().__init__(game_instance)
+
+                tkinter.Label(self, text="Le joueur {0} vous donne la vision :".format(game.PLAYERS[i_from][0]),
+                              wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
+                tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+                tkinter.Label(self, text=card[1], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+                tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+                tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
+
+                self.center()
+                self.show()
+
+        AnswerVisionPopup(self.game)
+    */
+  }
+}
+
+class WhiteCard extends Card {
+
+  static CARDS = [
+    {'name': "Éclair purificateur", 'equip': false, 'desc': "Chaque personnage, à l'exception de vous même, subit 2 Blessures."},
+    {'name': "Eau bénite",          'equip': false, 'desc': "Vous êtes soigné de 2 Blessures."},
+    {'name': "Eau bénite",          'equip': false, 'desc': "Vous êtes soigné de 2 Blessures."},
+    {'name': "Savoir ancestral",    'equip': false, 'desc': "Lorsque votre tour est terminé, jouez immédiatement un nouveau tour."},
+    {'name': "Avènement suprème",   'equip': false, 'desc': "Si vous êtes un Hunter, vous pouvez révéler votre identité. Si vous le faites, ou si vous êtes déjà révélé, vous soignez toutes vos Blessures."},
+    {'name': "Miroir divin",        'equip': false, 'desc': "Si vous êtes un Shadow, autre que Métamorphe, vous devez révéler votre identité."},
+    {'name': "Premiers secours",    'equip': false, 'desc': "Placez le marqueur de Blessures du joueur de votre choix (y compris vous) sur le 7."},
+    {'name': "Ange gardien",        'equip': false, 'desc': "Les attaques ne vous infligent aucune Blessure jusqu'à la fin de votre prochain tour."},
+    {'name': "Barre de chocolat",   'equip': false, 'desc': "Si vous êtes Allie, Agnes, Emi, Ellen, Momie ou Métamorphe, et que vous choisissez de révéler (ou avez déjà révélé) votre identité, vous soignez toutes vos Blessures."},
+    {'name': "Bénédiction",         'equip': false, 'desc': "Choisissez un joueur autre que vous même et lancez le dé à 6 faces. Ce joueur guérit d'autant de Blessures que le résultat du dé."},
+    {'name': "Crucifix en argent",  'equip': true,  'desc': "Si vous attaquez et tuez un autre personnage, vous récupérez toutes ses cartes équipements."},
+    {'name': "Toge sainte",         'equip': true,  'desc': "Vos attaques infligent 1 Blessure en moins, et les Blessures que vous subissez sont réduites de 1."},
+    {'name': "Lance de Longinus",   'equip': true,  'desc': "Si vous êtes un Hunter, et que votre identité est révélée, chaque fois qu'une de vos attaque inflige des Blessures, vous infligez 2 Blessures supplémentaires."},
+    {'name': "Amulette",            'equip': true,  'desc': "Vous ne subissez aucune Blessure causée par les cartes Ténèbres : Araignée sanguinaire, Dynamite ou Chauve-souris vampire."},
+    {'name': "Broche de chance",    'equip': true,  'desc': "Un joueur dans la Forêt hantée ne peut pas utiliser le pouvoir du Lieu pour vous infliger des Blessures (mais il peut toujours vous guérir)."},
+    {'name': "Boussole mystique",   'equip': true,  'desc': "Quand vous vous déplacez, vous pouvez lancer 2 fois les dés, et choisir quel résultat utiliser."},
+  ]
+
+  constructor(nw_position) {
+    super(nw_position, '#FFFFFF');
+  }
+
+  draw_card(){
+    /*
+    card = self.CARDS[i_card]
+
+    if card[1]:
+        self.game.characters[i_player].equipments.append((CardWhite, i_card))
+
+    class DrawWhitePopup(popup.Popup):
+        def __init__(self, game_instance):
+            super().__init__(game_instance)
+
+            tkinter.Label(self, text="Le joueur {0} pioche la carte :".format(game.PLAYERS[i_player][0]),
+                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
+            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+
+            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
+
+            self.center()
+            self.show()
+
+    DrawWhitePopup(self.game)
+
+    */
+  }
+}

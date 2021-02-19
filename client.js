@@ -143,7 +143,9 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
   var areas = new Array(6);
   for (var i = 0; i < areas.length; i++) {areas[i] = new Area(i, areas_order[i]);}
 
-  dices = [new Dice(3, 4, [0.5, 0.1], dices_val[0]), new Dice(4, 6, [.5, .2], dices_val[1])];
+  cards = [new BlackCard([.5, .07]), new VisionCard([.65, .07]), new WhiteCard([.8, .07])]
+
+  dices = [new Dice(3, 4, [0.45, 0.1], dices_val[0]), new Dice(4, 6, [.45, .2], dices_val[1])];
 
   tokens = new Array(tokens_center.length);
   for (var i = 0; i < characters_data.length; i++) {
@@ -206,7 +208,10 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
     canvas_ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     canvas_ctx.drawImage(background, 0, 0, ...rel2abs(background_dim));
+
     areas.forEach((area, i) => {area.draw_on(canvas_ctx);});
+
+    cards.forEach((card, i) => {card.draw_on(canvas_ctx);});
 
     dices.forEach((dice, i) => {dice.draw_on(canvas_ctx);});
 
