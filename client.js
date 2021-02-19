@@ -14,7 +14,6 @@ socket.on('init', (data) => {
 });
 
 socket.on('token', (data) => {
-  console.log(data);
   tokens[data['i_token']].center = data['center'];
 });
 
@@ -510,7 +509,9 @@ class Character{
   }
 
   reveal(){
-    return (! this.revealed) && confirm("Voulez vous vraiment vous révéler ?");
+    if (! this.revealed) {
+      modal.style.display = "block";
+    }
   }
 
   inventory(){
@@ -586,6 +587,8 @@ function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
 
 
 function game(id, tokens_center, dices_val, characters_data, areas_order, active_player){
+  modal = document.getElementById("revealPopup");
+
   var canvas = document.getElementById("game_canvas");
   var canvas_ctx = canvas.getContext("2d");
 
@@ -646,9 +649,7 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
         roll_dice();
         break;
       case 'r':
-        if (characters[id].reveal()) {
-          reveal();
-        }
+        characters[id].reveal();
         break;
     }
   });

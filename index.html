@@ -7,6 +7,15 @@
     <script src="/socket.io/socket.io.js"></script>
   </head>
   <body>
+
+    <div id="revealPopup" class="modal">
+      <div class="modal-content">
+          <h2>Voulez vous vraiment vous révéler ?</h2>
+          <input type="button" value="Oui" onclick="reveal(); modal.style.display = 'none'">
+          <input type="button" value="Non" onclick="modal.style.display = 'none'">
+      </div>
+    </div>
+
     <div style="display:none;"><img id="source" src="background.jpg"></div>
     <canvas id="game_canvas"></canvas>
     <script src="client.js"></script>
