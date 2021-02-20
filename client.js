@@ -136,7 +136,8 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   var canvas = document.getElementById("game_canvas");
   var canvas_ctx = canvas.getContext("2d");
 
-  var background = document.getElementById("source");
+  var background = document.createElement("img")
+  background.src="background.jpg";
   var background_dim = [0.4, 0.4 * background.height / background.width]
 
   var areas = new Array(6);

@@ -389,7 +389,30 @@ class Character{
 
   reveal(){
     if (! this.revealed) {
-      document.getElementById("revealPopup").style.display = "block";
+      var popup = document.createElement("div");
+      popup.className = "modal";
+      var popup_content = document.createElement("div");
+      popup_content.className = "modal-content";
+      var title = document.createElement("h2");
+      title.textContent = "Voulez vous vraiment vous révéler ?";
+      var button_yes = document.createElement("input");
+      button_yes.type = "button"
+      button_yes.value = "Oui";
+      button_yes.onclick = function () {
+        popup.remove();
+        reveal();
+      }
+      var button_no = document.createElement("input");
+      button_no.type = "button"
+      button_no.value = "Non";
+      button_no.onclick = function () {
+        popup.remove();
+      }
+      popup_content.appendChild(title);
+      popup_content.appendChild(button_yes);
+      popup_content.appendChild(button_no);
+      popup.appendChild(popup_content);
+      document.body.appendChild(popup);
     }
   }
 
@@ -514,11 +537,28 @@ class BlackCard extends Card {
     if (card['equip']) {
       characters[who].equipments.push(card);
     }
-    var popup = document.getElementById("BlackCardPopup")
-    popup.children[0].children[0].textContent = "Le joueur " + who.toString() + " pioche la carte ténèbre :";
-    popup.children[0].children[1].textContent = card['name'];
-    popup.children[0].children[2].textContent = card['desc'];
-    popup.style.display = "block";
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "Le joueur " + who.toString() + " pioche la carte ténèbre :";
+    var name = document.createElement("div");
+    name.textContent = card['name'];
+    var desc = document.createElement("div");
+    desc.textContent = card['desc'];
+    var button = document.createElement("input");
+    button.type = "button"
+    button.value = "OK";
+    button.onclick = function () {
+      popup.remove();
+    }
+    popup_content.appendChild(title);
+    popup_content.appendChild(name);
+    popup_content.appendChild(desc);
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
   }
 }
 
@@ -649,11 +689,29 @@ class WhiteCard extends Card {
     if (card['equip']) {
       characters[who].equipments.push(card);
     }
-    var popup = document.getElementById("WhiteCardPopup")
-    popup.children[0].children[0].textContent = "Le joueur " + who.toString() + " pioche la carte lumière :";
-    popup.children[0].children[1].textContent = card['name'];
-    popup.children[0].children[2].textContent = card['desc'];
-    popup.style.display = "block";
+
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "Le joueur " + who.toString() + " pioche la carte lumière :";
+    var name = document.createElement("div");
+    name.textContent = card['name'];
+    var desc = document.createElement("div");
+    desc.textContent = card['desc'];
+    var button = document.createElement("input");
+    button.type = "button"
+    button.value = "OK";
+    button.onclick = function () {
+      popup.remove();
+    }
+    popup_content.appendChild(title);
+    popup_content.appendChild(name);
+    popup_content.appendChild(desc);
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
   }
 }
 
