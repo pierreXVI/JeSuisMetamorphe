@@ -1,6 +1,7 @@
 const http     = require('http');
 const express  = require('express');
 const socketIO = require('socket.io');
+const utils    = require('./utils.js');
 
 const PORT = 1616;
 
@@ -46,19 +47,15 @@ for (var align in N_CHARACTERS) {
 }
 characters.shuffle();
 
-areas = [...Array(6).keys()].shuffle();
+areas = [...Array(utils.Areas.length).keys()].shuffle();
 
 active_player = 0;
 
-
-/*
-self.active_player = 0  # Todo
-# self.active_player = random.randrange(_N_PLAYERS)
-
-self.cards = [list(range(len(card_type.CARDS))) for card_type in card.TYPES]
-for c in self.cards:
-		random.shuffle(c)
-*/
+cards = [
+	[...Array(utils.Cards[0].length).keys()].shuffle(),
+	[...Array(utils.Cards[1].length).keys()].shuffle(),
+	[...Array(utils.Cards[2].length).keys()].shuffle()
+]
 
 
 let app = express();
@@ -69,38 +66,38 @@ http_server.listen(PORT, () => {console.log("Server started on port", PORT)});
 
 let io = socketIO(http_server);
 io.on('connection', (socket) => {
-	var i = clients.indexOf(null);
-	if (i < 0){
+	var id = clients.indexOf(null);
+	if (id < 0){
 		console.log("Connection from", socket.request.connection._peername, "\tdenied");
 		socket.emit('init', {'id': -1});
 		return;
 	}
 	console.log("Connection from", socket.request.connection._peername, "\tgranted as player", i);
 	clients[i] = socket;
-	socket.emit('init', {'id': i, 'tokens_center': tokens_center, 'dices_val': dices_val, 'characters': characters,
+	socket.emit('init', {'id': id, 'tokens_center': tokens_center, 'dices_val': dices_val, 'characters': characters,
 		'areas': areas, 'active_player': active_player});
 
 	socket.on('disconnect', () => {
-		clients[i] = null;
-		console.log("Lost connection from client", i);
+		clients[id] = null;
+		console.log("Lost connection from client", id);
 	});
 
 	socket.on('token', (data) => {
-		console.log("Player", i, "moved token", data['i_token'], "in", data['center']);
+		console.log("Player", id, "moved token", data['i_token'], "in", data['center']);
 		tokens_center[data['i_token']] = data['center'];
-		io.emit('token', data)
+		io.emit('token', data);
 	});
 
 	socket.on('dices', () => {
-		console.log("Player", i, "rolled the dices");
+		console.log("Player", id, "rolled the dices");
 		dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
-		io.emit('dices', dices_val)
+		io.emit('dices', dices_val);
 	});
 
-	socket.on('reveal', (data) => {
-		console.log("Player", i, "came out of the closet");
-		characters[i]['revealed'] = true;
-		io.emit('reveal', i)
+	socket.on('reveal', () => {
+		console.log("Player", id, "came out of the closet");
+		characters[id]['revealed'] = true;
+		io.emit('reveal', id);
 
 	});
 
@@ -113,18 +110,17 @@ io.on('connection', (socket) => {
 		// 				comm.send(client, ['turn', self.server.active_player])
 	});
 
-	socket.on('draw', (data) => {
-		console.log(data);
-		// if self.server.cards[msg[1]]:
-		// 		print("Player {0} draw a card".format(game.PLAYERS[self.i][0]))
-		// 		i_card = self.server.cards[msg[1]].pop()
-		// 		if card.TYPES[msg[1]] != card.CardVision and card.TYPES[msg[1]].CARDS[i_card][1]:
-		// 				self.server.characters[self.i][3].append((msg[1], i_card))
-		// 		for client in self.server.clients:
-		// 				if client is not None:
-		// 						comm.send(client, ['draw', self.i, msg[1], i_card])
-		// else:
-		// 		print("Cannot draw card of type {0}".format(msg[1]))
+	socket.on('draw_card', (i) => {
+		if (cards[i].length > 0) {
+			console.log("Player", id, "draw a card", i);
+			i_card = cards[i].pop()
+			if (i != 1 && utils.Cards[i][i_card]['equip']){
+				characters[id]['equipments'].push({'type':i, 'i_card': i_card});
+			}
+			io.emit('draw_card', {'who': id, 'type': i, 'i_card': i_card});
+		} else {
+			console.log("Cannot draw card of type", i);
+		}
 	});
 
 	socket.on('vision', (data) => {

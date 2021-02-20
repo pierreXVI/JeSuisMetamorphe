@@ -30,7 +30,7 @@ socket.on('turn', (data) => {
   // self.game.active_player.i = msg[1]
 });
 
-socket.on('draw', (data) => {
+socket.on('draw_card', (data) => {
   console.log(data);
   // if card.TYPES[msg[2]] == card.CardVision:
   //     if self.i == msg[1]:
@@ -66,8 +66,8 @@ function end_turn(){
   socket.emit('turn');
 }
 
-function draw(i){
-  socket.emit('draw', {'type': i});
+function draw_card(i){
+  socket.emit('draw_card', i);
 }
 
 function vision(i_vision, i_player){
@@ -169,6 +169,10 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
         return;
       }
     }
+
+    cards.forEach((card, i) => {
+      if (card.collide(...abs2rel(e.offsetX, e.offsetY))) {draw_card(i);}
+    });
   });
 
   document.addEventListener('mouseup', e => {

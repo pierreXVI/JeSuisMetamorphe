@@ -679,3 +679,11 @@ class WhiteCard extends Card {
     */
   }
 }
+
+
+if (typeof module !== 'undefined'){
+  module.exports = {
+    Areas: Area.AREAS,
+    Cards: [BlackCard.CARDS, VisionCard.CARDS, WhiteCard.CARDS]
+  };
+}
