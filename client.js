@@ -137,8 +137,10 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   var canvas_ctx = canvas.getContext("2d");
 
   var background = document.createElement("img")
-  background.src="background.jpg";
+  background.src="./background.jpg";
   var background_dim = [0.4, 0.4 * background.height / background.width]
+
+  lock_screen = false;
 
   var areas = new Array(6);
   for (var i = 0; i < areas.length; i++) {areas[i] = new Area(i, areas_order[i]);}
@@ -164,6 +166,7 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
 
 
   document.addEventListener('mousedown', e => {
+    if (lock_screen) {return;}
     owned_tokens.sort((a, b) => {return 10 * (b.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
     for (var i = 0; i < owned_tokens.length; i++) {
       owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(e.offsetX, e.offsetY));
@@ -178,6 +181,7 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   });
 
   document.addEventListener('mouseup', e => {
+    if (lock_screen) {return;}
     owned_tokens.forEach((token, i) => {
       if (token.hold) {
         token.drop();
@@ -187,6 +191,7 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   });
 
   document.addEventListener('mousemove', e => {
+    if (lock_screen) {return;}
     owned_tokens.forEach((token, i) => {
       if (token.hold){
         token.center = abs2rel(e.offsetX, e.offsetY);
@@ -197,6 +202,7 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   });
 
   document.addEventListener('keydown', e => {
+    if (lock_screen) {return;}
     switch (e.key) {
       case 'd':
         roll_dice();
@@ -228,5 +234,10 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
         + 10 * (a.center[1] - b.center[1] - a.offset[1] + b.offset[1])
         + (a.center[0] - b.center[0] - a.offset[0] + b.offset[0])
     }).forEach((token, i) => {token.draw_on(canvas_ctx);});
+
+    if (lock_screen) {
+      owned_tokens.forEach((token, i) => {token.drop();});
+
+    }
   }, 100);
 }

@@ -407,12 +407,15 @@ class Character{
       button_no.value = "Non";
       button_no.onclick = function () {
         popup.remove();
+        lock_screen = false;
       }
       popup_content.appendChild(title);
       popup_content.appendChild(button_yes);
       popup_content.appendChild(button_no);
       popup.appendChild(popup_content);
       document.body.appendChild(popup);
+      lock_screen = true;
+
     }
   }
 
@@ -552,6 +555,7 @@ class BlackCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
+      lock_screen = false;
     }
     popup_content.appendChild(title);
     popup_content.appendChild(name);
@@ -559,6 +563,7 @@ class BlackCard extends Card {
     popup_content.appendChild(button);
     popup.appendChild(popup_content);
     document.body.appendChild(popup);
+    lock_screen = true;
   }
 }
 
@@ -705,6 +710,7 @@ class WhiteCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
+      lock_screen = false;
     }
     popup_content.appendChild(title);
     popup_content.appendChild(name);
@@ -712,6 +718,7 @@ class WhiteCard extends Card {
     popup_content.appendChild(button);
     popup.appendChild(popup_content);
     document.body.appendChild(popup);
+    lock_screen = true;
   }
 }
 
