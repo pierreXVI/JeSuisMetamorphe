@@ -31,12 +31,13 @@ socket.on('turn', (data) => {
 });
 
 socket.on('draw_card', (data) => {
-  console.log(data);
-  // if card.TYPES[msg[2]] == card.CardVision:
-  //     if self.i == msg[1]:
-  //         self.send_vision(msg[3], self.game.cards[msg[2]].draw(msg[3], msg[1]))
-  // else:
-  //     self.game.cards[msg[2]].draw(msg[3], msg[1])
+  if (data['type'] == 1) {
+    if (data['who'] == id) {
+      send_vision(data['i_card'], cards[data['type']].draw_card(data['who'], data['i_card']));
+    }
+  } else {
+    cards[data['type']].draw_card(data['who'], data['i_card']);
+  }
 });
 
 socket.on('vision', (data) => {
@@ -50,7 +51,7 @@ socket.on('take', (data) => {
 });
 
 
-function send_token(i_token, center){
+function move_token(i_token, center){
   socket.emit('token', {'i_token': i_token, 'center': center});
 }
 
@@ -70,7 +71,7 @@ function draw_card(i){
   socket.emit('draw_card', i);
 }
 
-function vision(i_vision, i_player){
+function send_vision(i_vision, i_player){
   socket.emit('vision', {'i_vision': i_vision, 'i_player': i_player});
 }
 
@@ -131,9 +132,7 @@ function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null) {
 const PLAYERS = ['#FF0000', '#00FF00', '#0000FF', '#FFFFFF', '#FF9632', '#FFFF00', '#6400C8', '#141414']
 
 
-function game(id, tokens_center, dices_val, characters_data, areas_order, active_player){
-  modal = document.getElementById("revealPopup");
-
+function game(id_player, tokens_center, dices_val, characters_data, areas_order, active_player){
   var canvas = document.getElementById("game_canvas");
   var canvas_ctx = canvas.getContext("2d");
 
@@ -142,6 +141,8 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
 
   var areas = new Array(6);
   for (var i = 0; i < areas.length; i++) {areas[i] = new Area(i, areas_order[i]);}
+
+  id = id_player;
 
   cards = [new BlackCard([.5, .07]), new VisionCard([.65, .07]), new WhiteCard([.8, .07])]
 
@@ -179,7 +180,7 @@ function game(id, tokens_center, dices_val, characters_data, areas_order, active
     owned_tokens.forEach((token, i) => {
       if (token.hold) {
         token.drop();
-        send_token(tokens.indexOf(token), token.center);
+        move_token(tokens.indexOf(token), token.center);
       }
     });
   });

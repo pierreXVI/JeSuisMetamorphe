@@ -115,7 +115,7 @@ io.on('connection', (socket) => {
 			console.log("Player", id, "draw a card", i);
 			i_card = cards[i].pop()
 			if (i != 1 && utils.Cards[i][i_card]['equip']){
-				characters[id]['equipments'].push({'type':i, 'i_card': i_card});
+				characters[id]['equipments'].push({'type': i, 'i_card': i_card});
 			}
 			io.emit('draw_card', {'who': id, 'type': i, 'i_card': i_card});
 		} else {

@@ -9,8 +9,8 @@
 }
 
 
-#revealPopup {display: none; position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .4);}
-#revealPopup > .modal-content {
+.modal {display: none; position: fixed; width: 100%; height: 100%; background-color: rgba(0, 0, 0, .4);}
+.modal > .modal-content {
   background-color: #FEFEFE;
   margin: auto;
   width: 50%;
@@ -18,6 +18,6 @@
   animation: .5s animatetop;
   text-align: center;
 }
-#revealPopup > .modal-content > h2 {padding: 3vw; margin: 0;}
-#revealPopup > .modal-content > input {margin: 3vw;}
+.modal > .modal-content > h2 {padding: 3vw; margin: 0;}
+.modal > .modal-content > input {margin: 3vw;}
 @keyframes animatetop {from {opacity:0} to {opacity:1}}
