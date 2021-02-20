@@ -5,14 +5,33 @@
     <title>Je suis Métamorphe</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   </head>
   <body>
 
     <div id="revealPopup" class="modal">
       <div class="modal-content">
           <h2>Voulez vous vraiment vous révéler ?</h2>
-          <input type="button" value="Oui" onclick="reveal(); modal.style.display = 'none'">
-          <input type="button" value="Non" onclick="modal.style.display = 'none'">
+          <input type="button" value="Oui" onclick="reveal(); $(this).parent().parent()[0].style.display = 'none'">
+          <input type="button" value="Non" onclick="$(this).parent().parent()[0].style.display = 'none'">
+      </div>
+    </div>
+
+    <div id="BlackCardPopup" class="modal">
+      <div class="modal-content">
+          <h2></h2>
+          <div></div>
+          <div></div>
+          <input type="button" value="OK" onclick="$(this).parent().parent()[0].style.display = 'none'">
+      </div>
+    </div>
+
+    <div id="WhiteCardPopup" class="modal">
+      <div class="modal-content">
+          <h2></h2>
+          <div></div>
+          <div></div>
+          <input type="button" value="OK" onclick="$(this).parent().parent()[0].style.display = 'none'">
       </div>
     </div>
 

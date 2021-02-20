@@ -72,8 +72,8 @@ io.on('connection', (socket) => {
 		socket.emit('init', {'id': -1});
 		return;
 	}
-	console.log("Connection from", socket.request.connection._peername, "\tgranted as player", i);
-	clients[i] = socket;
+	console.log("Connection from", socket.request.connection._peername, "\tgranted as player", id);
+	clients[id] = socket;
 	socket.emit('init', {'id': id, 'tokens_center': tokens_center, 'dices_val': dices_val, 'characters': characters,
 		'areas': areas, 'active_player': active_player});
 

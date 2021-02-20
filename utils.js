@@ -311,11 +311,14 @@ class Character{
     this.i_player = i_player;
     this.i_client = i_client;
     this.show = false;
-    // self.equipments = [(card.TYPES[e[0]], e[1]) for e in equipments]
-    //
-    // y = render_text(character[2], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
-    // y = render_text(character[3], font, color, self.card, 'c', self.MARGIN + self.WIDTH / 2, y + 20)
-    // _ = render_text(character[4], font, (0, 0, 0), self.card, 'c', self.MARGIN + self.WIDTH / 2, y)
+    this.equipments = [];
+    equipments.forEach((equipment, i) => {
+      if (equipment['type'] == 0) {
+        this.equipments.push(BlackCard.CARDS[equipment['i_card']]);
+      } else if (equipment['type'] == 2) {
+        this.equipments.push(WhiteCard.CARDS[equipment['i_card']]);
+      }
+    });
   }
 
   collide(x, y){
@@ -386,7 +389,7 @@ class Character{
 
   reveal(){
     if (! this.revealed) {
-      modal.style.display = "block";
+      document.getElementById("revealPopup").style.display = "block";
     }
   }
 
@@ -506,28 +509,16 @@ class BlackCard extends Card {
     super(nw_position, '#141414');
   }
 
-  draw_card(){
-    /*
-    card = self.CARDS[i_card]
-
-    if card[1]:
-        self.game.characters[i_player].equipments.append((self.__class__, i_card))
-
-    class DrawDarkPopup(popup.Popup):
-        def __init__(self, game_instance):
-            super().__init__(game_instance)
-
-            tkinter.Label(self, text="Le joueur {0} pioche la carte :".format(game.PLAYERS[i_player][0]),
-                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
-            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
-
-            self.center()
-            self.show()
-
-    DrawDarkPopup(self.game)
-    */
+  draw_card(who, i_card){
+    var card = BlackCard.CARDS[i_card];
+    if (card['equip']) {
+      characters[who].equipments.push(card);
+    }
+    var popup = document.getElementById("BlackCardPopup")
+    popup.children[0].children[0].textContent = "Le joueur " + who.toString() + " pioche la carte ténèbre :";
+    popup.children[0].children[1].textContent = card['name'];
+    popup.children[0].children[2].textContent = card['desc'];
+    popup.style.display = "block";
   }
 }
 
@@ -653,30 +644,16 @@ class WhiteCard extends Card {
     super(nw_position, '#FFFFFF');
   }
 
-  draw_card(){
-    /*
-    card = self.CARDS[i_card]
-
-    if card[1]:
-        self.game.characters[i_player].equipments.append((CardWhite, i_card))
-
-    class DrawWhitePopup(popup.Popup):
-        def __init__(self, game_instance):
-            super().__init__(game_instance)
-
-            tkinter.Label(self, text="Le joueur {0} pioche la carte :".format(game.PLAYERS[i_player][0]),
-                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
-            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-
-            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
-
-            self.center()
-            self.show()
-
-    DrawWhitePopup(self.game)
-
-    */
+  draw_card(who, i_card){
+    var card = WhiteCard.CARDS[i_card];
+    if (card['equip']) {
+      characters[who].equipments.push(card);
+    }
+    var popup = document.getElementById("WhiteCardPopup")
+    popup.children[0].children[0].textContent = "Le joueur " + who.toString() + " pioche la carte lumière :";
+    popup.children[0].children[1].textContent = card['name'];
+    popup.children[0].children[2].textContent = card['desc'];
+    popup.style.display = "block";
   }
 }
 
