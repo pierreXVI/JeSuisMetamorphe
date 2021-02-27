@@ -330,7 +330,7 @@ class Character{
     ctx.save();
     ctx.translate(...rel2abs(this.nw_position));
 
-    ctx.fillStyle = PLAYERS[this.i_player];
+    ctx.fillStyle = PLAYERS[this.i_player]['color'];
     ctx.beginPath();
     ctx.rect(...rel2abs(-Character.BORDER, -Character.BORDER,
       Character.WIDTH + 2 * Character.BORDER, Character.HEIGHT + 2 * Character.BORDER));
@@ -592,75 +592,100 @@ class VisionCard extends Card {
     super(nw_position, '#00FF00');
   }
 
-  draw_card(){
-    /*
-    card = self.CARDS[i_card]
+  draw_card(who, i_card){
+    if (who != id) {
+      return;
+    }
+    var card = VisionCard.CARDS[i_card];
 
-    class DrawVisionPopup(popup.Popup):
-        def __init__(self, game_instance):
-            super().__init__(game_instance)
-            self.i = -1
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "A quel joueur voulez vous donner cette carte vision ?";
+    var name = document.createElement("div");
+    name.textContent = card['name'];
+    var desc1 = document.createElement("div");
+    desc1.textContent = card['desc1'];
+    var desc2 = document.createElement("div");
+    desc2.textContent = card['desc2'];
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      var radios = document.getElementsByName('vision_to_player');
+      for (var i = 0, length = radios.length; i < length; i++) {
+        if (radios[i].checked) {
+          var i_player = radios[i].value
+          popup.remove();
+          lock_screen = false;
+          send_vision(i_card, i_player);
+          break;
+        }
+      }
+    }
 
-            tkinter.Label(self, text="A quel joueur voulez vous donner cette vision ?",
-                          wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
-            tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-            tkinter.Label(self, text=card[1], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-            tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
+    popup_content.appendChild(title);
+    popup_content.appendChild(name);
+    popup_content.appendChild(desc1);
+    popup_content.appendChild(desc2);
 
-            frame = tkinter.Frame(self)
-            self.var = tkinter.IntVar()
-            self.var.set(-1)
-            for i in range(len(game.PLAYERS)):
-                if i != self._game.client.i:
-                    tkinter.Radiobutton(frame, text=game.PLAYERS[i][0], variable=self.var, value=i).grid(
-                        row=i // 4, column=i % 4, sticky=tkinter.W, padx=10, pady=10)
-            frame.pack()
+    for (var i = 0; i < characters.length; i++) {
+      if (i == id) {
+        continue;
+      }
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.id = "radio" + i.toString();
+      radio.name = "vision_to_player";
+      radio.value = i;
+      var label = document.createElement("label");
+      label.for = "radio" + i.toString();
+      label.textContent = "Joueur " + i.toString();
+      popup_content.appendChild(radio);
+      popup_content.appendChild(label);
+    }
 
-            tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.answer).pack(padx=30, pady=30)
-
-            self.center()
-            self.show()
-
-        def answer(self):
-            self.i = self.var.get()
-            if self.i >= 0:
-                self.destroy()
-
-    return DrawVisionPopup(self.game).i
-    */
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
   }
 
-  answer(){
-    /*
-    def answer(self, i_card, i_from):
-        """
-        Answer the vision i_card from player i_from
+  answer(i_card, i_from){
+    var card = VisionCard.CARDS[i_card];
+    console.log(i_card);
 
-        Args:
-            i_card (int)
-            i_from (int)
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "Le joueur ", i_from, " vous donne la vision :";
+    var name = document.createElement("div");
+    name.textContent = card['name'];
+    var desc1 = document.createElement("div");
+    desc1.textContent = card['desc1'];
+    var desc2 = document.createElement("div");
+    desc2.textContent = card['desc2'];
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      popup.remove();
+      lock_screen = false;
+    }
 
-        Returns:
-            None
-        """
-        card = self.CARDS[i_card]
+    popup_content.appendChild(title);
+    popup_content.appendChild(name);
+    popup_content.appendChild(desc1);
+    popup_content.appendChild(desc2);
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
 
-        class AnswerVisionPopup(popup.Popup):
-            def __init__(self, game_instance):
-                super().__init__(game_instance)
-
-                tkinter.Label(self, text="Le joueur {0} vous donne la vision :".format(game.PLAYERS[i_from][0]),
-                              wraplength=600, padx=30, pady=10, font=(None, 16)).pack()
-                tkinter.Label(self, text=card[0], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-                tkinter.Label(self, text=card[1], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-                tkinter.Label(self, text=card[2], wraplength=300, padx=30, pady=10, font=(None, 12)).pack()
-                tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy).pack(padx=30, pady=30)
-
-                self.center()
-                self.show()
-
-        AnswerVisionPopup(self.game)
-    */
   }
 }
 
@@ -721,6 +746,79 @@ class WhiteCard extends Card {
     lock_screen = true;
   }
 }
+
+
+const PLAYERS = [
+  {'name': 'Rouge', 'color': '#FF0000'},
+  {'name': "Vert", 'color': '#00FF00'},
+  {'name': "Bleu", 'color': '#0000FF'},
+  {'name': "Blanc", 'color': '#FFFFFF'},
+  {'name': "TODO", 'color': '#FF9632'},
+  {'name': "TODO", 'color': '#FFFF00'},
+  {'name': "TODO", 'color': '#6400C8'},
+  {'name': "TODO", 'color': '#141414'},
+]
+
+
+function rel2abs(){
+  if (arguments.length == 1) {
+    if (arguments[0] instanceof Array) {
+      let out = new Array(arguments[0].length);
+      for (let i = 0; i < arguments[0].length; i++) {
+        out[i] = arguments[0][i] * document.documentElement.clientWidth;
+      }
+      return out;
+    } else {
+      return arguments[0] * document.documentElement.clientWidth;
+    }
+  }
+
+  let out = new Array(arguments.length);
+  for (let i = 0; i < arguments.length; i++) {
+    out[i] = arguments[i] * document.documentElement.clientWidth;
+  }
+  return out;
+}
+
+function abs2rel(){
+  if (arguments.length == 1) {
+    if (arguments[0] instanceof Array) {
+      let out = new Array(arguments[0].length);
+      for (let i = 0; i < arguments[0].length; i++) {
+        out[i] = arguments[0][i] / document.documentElement.clientWidth;
+      }
+      return out;
+    } else {
+      return arguments[0] / document.documentElement.clientWidth;
+    }
+  }
+
+  let out = new Array(arguments.length);
+  for (let i = 0; i < arguments.length; i++) {
+    out[i] = arguments[i] / document.documentElement.clientWidth;
+  }
+  return out;
+}
+
+
+function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null){
+  text.split('\n').forEach((line, i) => {
+    ctx.fillText(line, x, y, maxWidth);
+    y += lineHeight;
+  });
+  return y;
+}
+
+
+Object.defineProperty(Array.prototype, 'shuffle', {
+    value: function() {
+        for (let i = this.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            [this[i], this[j]] = [this[j], this[i]];
+        }
+        return this;
+    }
+});
 
 
 if (typeof module !== 'undefined'){

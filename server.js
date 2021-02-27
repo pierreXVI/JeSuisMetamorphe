@@ -16,16 +16,12 @@ const CHARACTERS_REPARTITION = {
 		8: {'Shadow': 3, 'Neutral': 2, 'Hunter': 3}
 };
 
-
-Object.defineProperty(Array.prototype, 'shuffle', {
-    value: function() {
-        for (let i = this.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [this[i], this[j]] = [this[j], this[i]];
-        }
-        return this;
-    }
-});
+let clients;
+let tokens_center;
+let dices_val;
+let characters;
+let areas;
+let cards;
 
 
 clients = new Array(N_PLAYERS).fill(null);
@@ -48,8 +44,6 @@ for (var align in N_CHARACTERS) {
 characters.shuffle();
 
 areas = [...Array(utils.Areas.length).keys()].shuffle();
-
-active_player = 0;
 
 cards = [
 	[...Array(utils.Cards[0].length).keys()].shuffle(),
@@ -74,24 +68,23 @@ io.on('connection', (socket) => {
 	}
 	console.log("Connection from", socket.request.connection._peername, "\tgranted as player", id);
 	clients[id] = socket;
-	socket.emit('init', {'id': id, 'tokens_center': tokens_center, 'dices_val': dices_val, 'characters': characters,
-		'areas': areas, 'active_player': active_player});
+	socket.emit('init', {'id': id, 'tokens_center': tokens_center, 'dices_val': dices_val, 'characters': characters, 'areas': areas});
 
 	socket.on('disconnect', () => {
 		clients[id] = null;
 		console.log("Lost connection from client", id);
 	});
 
-	socket.on('token', (data) => {
+	socket.on('move_token', (data) => {
 		console.log("Player", id, "moved token", data['i_token'], "in", data['center']);
 		tokens_center[data['i_token']] = data['center'];
-		io.emit('token', data);
+		io.emit('move_token', data);
 	});
 
-	socket.on('dices', () => {
+	socket.on('roll_dice', () => {
 		console.log("Player", id, "rolled the dices");
 		dices_val = [Math.floor(Math.random() * 4) + 1, Math.floor(Math.random() * 6) + 1];
-		io.emit('dices', dices_val);
+		io.emit('roll_dice', dices_val);
 	});
 
 	socket.on('reveal', () => {
@@ -101,19 +94,10 @@ io.on('connection', (socket) => {
 
 	});
 
-	socket.on('turn', (data) => {
-		console.log(data);
-		// print("Player {0} ended it's turn".format(game.PLAYERS[self.i][0]))
-		// self.server.active_player = (self.server.active_player + 1) % _N_PLAYERS
-		// for client in self.server.clients:
-		// 		if client is not None:
-		// 				comm.send(client, ['turn', self.server.active_player])
-	});
-
 	socket.on('draw_card', (i) => {
 		if (cards[i].length > 0) {
-			console.log("Player", id, "draw a card", i);
 			i_card = cards[i].pop()
+			console.log("Player", id, "draw card", i_card, "from", i);
 			if (i != 1 && utils.Cards[i][i_card]['equip']){
 				characters[id]['equipments'].push({'type': i, 'i_card': i_card});
 			}
@@ -124,13 +108,13 @@ io.on('connection', (socket) => {
 	});
 
 	socket.on('vision', (data) => {
-		console.log(data);
-		// if self.server.clients[msg[2]]:
-		// 		print("Player {0} send vision card to player {1}"
-		// 					.format(game.PLAYERS[self.i][0], game.PLAYERS[msg[2]][0]))
-		// 		comm.send(self.server.clients[msg[2]], ['vision', msg[1], self.i])
-		// else:
-		// 		print("Error: Client {0} is not connected".format(msg[2]))
+		console.log("Player", id, "send vision card", data['i_card'], "to player", data['i_player']);
+		if (clients[data['i_player']] == null) {
+			console.log("Error: Client", data['i_player'], "is not connected");
+			return;
+		} else {
+			clients[data['i_player']].emit('vision', {'i_card': data['i_card'], 'i_from': id});
+		}
 	});
 
 	socket.on('take', (data) => {
