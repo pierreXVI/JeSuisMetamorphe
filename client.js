@@ -45,6 +45,11 @@ socket.on('vision', (data) => {
   cards[1].answer(data['i_card'], data['i_from']);
 });
 
+socket.on('take_equipment', (data) => {
+  console.log("Player", data['who'], "takes equipment", data['i_equipment'], "from player", data['i_player']);
+  characters[data['who']]['equipments'].push(...characters[data['i_player']]['equipments'].splice(data['i_equipment'], 1));
+});
+
 
 function move_token(i_token){
   socket.emit('move_token', {'i_token': i_token, 'center': tokens[i_token].center});
@@ -64,6 +69,10 @@ function draw_card(i_card){
 
 function send_vision(i_card, i_player){
   socket.emit('vision', {'i_card': i_card, 'i_player': i_player});
+}
+
+function take_equipment(i_player, i_equipment){
+  socket.emit('take_equipment', {'i_player': i_player, 'i_equipment': i_equipment});
 }
 
 

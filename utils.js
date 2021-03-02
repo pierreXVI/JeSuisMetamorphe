@@ -463,6 +463,7 @@ class Character{
         popup_content.appendChild(div);
       });
 
+      var i_player = this.i_player;
       var button_take = document.createElement("input");
       button_take.type = "button";
       button_take.value = "Prendre équipement";
@@ -471,9 +472,9 @@ class Character{
         for (var i = 0, length = radios.length; i < length; i++) {
           if (radios[i].checked) {
             var i_equipment = radios[i].value
-            console.log(i_equipment);
             popup.remove();
             lock_screen = false;
+            take_equipment(i_player, i_equipment);
             break;
           }
         }

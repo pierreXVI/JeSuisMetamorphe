@@ -117,12 +117,9 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	socket.on('take', (data) => {
-		console.log(data);
-		// self.server.characters[self.i][3].append(self.server.characters[msg[1]][3].pop(msg[2]))
-		// for client in self.server.clients:
-		// 		if client is not None:
-		// 				comm.send(client, ['take', self.i, msg[1], msg[2]])
-
+	socket.on('take_equipment', (data) => {
+		console.log("Player", id, "takes equipment", data['i_equipment'], "from player", data['i_player']);
+		characters[id]['equipments'].push(...characters[data['i_player']]['equipments'].splice(data['i_equipment'], 1));
+		io.emit('take_equipment', {'who': id, 'i_player': data['i_player'], 'i_equipment': data['i_equipment']});
 	});
 });
