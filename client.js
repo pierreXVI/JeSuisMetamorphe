@@ -103,6 +103,8 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
   document.addEventListener('click', e => {
     if (lock_screen) return;
     cards.forEach((card, i) => {if (card.collide(...abs2rel(e.offsetX, e.offsetY))) draw_card(i);});
+
+    characters.forEach((character, i) => {if (character.collide(...abs2rel(e.offsetX, e.offsetY))) character.inventory();});
   });
 
   document.addEventListener('mouseup', e => {

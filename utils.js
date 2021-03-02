@@ -420,64 +420,66 @@ class Character{
   }
 
   inventory(){
-        // class InventoryPopup(popup.Popup):
-        //     def __init__(self, game, character):
-        //         super().__init__(game)
-        //         self.character = character
-        //
-        //         self.label = tkinter.Label(self, text='', wraplength=600, padx=30, pady=10, font=(None, 16))
-        //         self.listbox = tkinter.Listbox(self, selectmode=tkinter.SINGLE)
-        //         self.button_take = tkinter.Button(self, text="Prendre équipement", padx=30, pady=10, command=self.take)
-        //         self.button_ok = tkinter.Button(self, text="Ok", padx=30, pady=10, command=self.destroy)
-        //         self.update_widgets()
-        //
-        //         self.show()
-        //
-        //     def update_widgets(self):
-        //         self.label.pack_forget()
-        //         self.listbox.pack_forget()
-        //         self.button_take.pack_forget()
-        //         self.button_ok.pack_forget()
-        //
-        //         self.listbox.delete(0, tkinter.END)
-        //         self.listbox.config(width=0, height=0)
-        //         if self.character.equipments:
-        //             self.label.config(text="Le joueur {0} possède les équipements :"
-        //                               .format(PLAYERS[self.character.i_player][0]))
-        //
-        //             for equip in self.character.equipments:
-        //                 c = equip[0].CARDS[equip[1]]
-        //                 self.listbox.insert(tkinter.END, '{0} : {1}'.format(c[0], c[2]))
-        //
-        //             self.label.pack()
-        //             self.listbox.pack()
-        //             if self._game.client.i != self.character.i_player:
-        //                 self.button_take.pack()
-        //         else:
-        //             self.label.config(text="Le joueur {0} ne possède pas d'équipement"
-        //                               .format(PLAYERS[self.character.i_player][0]))
-        //
-        //             self.label.pack()
-        //
-        //         self.button_ok.pack()
-        //         self.center()
-        //
-        //     def callback(self):
-        //         """
-        //         Update the listbox
-        //
-        //         Returns:
-        //             None
-        //         """
-        //         if self.listbox.size() != len(self.character.equipments):
-        //             self.update_widgets()
-        //
-        //     def take(self):
-        //         ids = self.listbox.curselection()
-        //         if ids:
-        //             self._game.client.take_equipment(self.character.i_player, ids[0])
-        //
-        // return InventoryPopup(self.game, self)
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+
+    var title = document.createElement("h2");
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      popup.remove();
+      lock_screen = false;
+    }
+
+    if (this.equipments.length == 0) {
+      title.textContent = "Le joueur " +  this.i_player.toString() + " ne possède pas d'équipements";
+      popup_content.appendChild(title);
+      popup_content.appendChild(button);
+    } else {
+      title.textContent = "Equipements du joueur " +  this.i_player.toString() + " :";
+      popup_content.appendChild(title);
+
+      this.equipments.forEach((equipment, i) => {
+        var radio = document.createElement("input");
+        radio.type = "radio";
+        radio.id = "radio" + i.toString();
+        radio.name = "equipment";
+        radio.value = i;
+        radio.style.marginRight = "1vw";
+        var label = document.createElement("label");
+        label.for = "radio" + i.toString();
+        label.appendChild(radio);
+        label.innerHTML = label.innerHTML + equipment['name'] + " : " + equipment['desc'];
+        label.style.display = "block";
+        label.style.margin = "1vw";
+        popup_content.appendChild(label);
+      });
+
+      var button_take = document.createElement("input");
+      button_take.type = "button";
+      button_take.value = "Prendre équipement";
+      button_take.onclick = function () {
+        var radios = document.getElementsByName('equipment');
+        for (var i = 0, length = radios.length; i < length; i++) {
+          if (radios[i].checked) {
+            var i_equipment = radios[i].value
+            console.log(i_equipment);
+            popup.remove();
+            lock_screen = false;
+            break;
+          }
+        }
+      }
+      popup_content.appendChild(button_take);
+      popup_content.appendChild(button);
+    }
+
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
   }
 }
 
@@ -606,10 +608,12 @@ class VisionCard extends Card {
     title.textContent = "A quel joueur voulez vous donner cette carte vision ?";
     var name = document.createElement("div");
     name.textContent = card['name'];
+    name.style.marginBottom = "2vw";
     var desc1 = document.createElement("div");
     desc1.textContent = card['desc1'];
     var desc2 = document.createElement("div");
     desc2.textContent = card['desc2'];
+    desc2.style.marginBottom = "2vw";
     var button = document.createElement("input");
     button.type = "button";
     button.value = "OK";
@@ -640,10 +644,13 @@ class VisionCard extends Card {
       radio.id = "radio" + i.toString();
       radio.name = "vision_to_player";
       radio.value = i;
+      radio.style.marginRight = "1vw";
       var label = document.createElement("label");
       label.for = "radio" + i.toString();
-      label.textContent = "Joueur " + i.toString();
-      popup_content.appendChild(radio);
+      label.appendChild(radio);
+      label.innerHTML = label.innerHTML + "Joueur " + i.toString();
+      label.style.display = "block";
+      label.style.margin = "1vw";
       popup_content.appendChild(label);
     }
 
@@ -655,14 +662,13 @@ class VisionCard extends Card {
 
   answer(i_card, i_from){
     var card = VisionCard.CARDS[i_card];
-    console.log(i_card);
 
     var popup = document.createElement("div");
     popup.className = "modal";
     var popup_content = document.createElement("div");
     popup_content.className = "modal-content";
     var title = document.createElement("h2");
-    title.textContent = "Le joueur ", i_from, " vous donne la vision :";
+    title.textContent = "Le joueur " + i_from.toString() + " vous donne la vision :";
     var name = document.createElement("div");
     name.textContent = card['name'];
     var desc1 = document.createElement("div");
