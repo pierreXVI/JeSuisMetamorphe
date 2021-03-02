@@ -69,6 +69,7 @@ function draw_card(i_card){
 
 function send_vision(i_card, i_player){
   socket.emit('vision', {'i_card': i_card, 'i_player': i_player});
+  if (i_card == 0) cards[1].view_character(i_player);
 }
 
 function take_equipment(i_player, i_equipment){

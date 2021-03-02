@@ -578,6 +578,7 @@ class BlackCard extends Card {
 class VisionCard extends Card {
 
   static CARDS = [
+    {'name': "Vision suprème",       'desc1': "",                                                              'desc2': "Monte moi secrètement ta carte Personnage !"},
     {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
     {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
     {'name': "Vision enivrante",     'desc1': "Je pense que tu es Neutre ou Hunter",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure"},
@@ -592,8 +593,7 @@ class VisionCard extends Card {
     {'name': "Vision réconfortante", 'desc1': "Je pense que tu es Neutre",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
     {'name': "Vision lugubre",       'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
     {'name': "Vision foudroyante",   'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
-    {'name': "Vision purificatrice", 'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 2 Blessures !"},
-    {'name': "Vision suprème",       'desc1': "",                                                              'desc2': "Monte moi secrètement ta carte Personnage !"}
+    {'name': "Vision purificatrice", 'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 2 Blessures !"}
   ]
 
   constructor(nw_position) {
@@ -698,6 +698,40 @@ class VisionCard extends Card {
     document.body.appendChild(popup);
     lock_screen = true;
 
+  }
+
+  view_character(i_player){
+    var character_0 = characters[i_player];
+
+    var character = new Character(character_0.align, Character.CHARACTERS[character_0.align].indexOf(character_0.character),
+      true, [], [Character.BORDER, Character.BORDER], i_player, id);
+
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var canvas = document.createElement("canvas");
+    canvas.width  = rel2abs(Character.WIDTH + 2 * Character.BORDER);
+    canvas.height = rel2abs(Character.HEIGHT + 2 * Character.BORDER);
+    canvas.style.display = "block";
+    canvas.style.margin = "auto";
+    canvas.style.padding = "1vw";
+    character.draw_on(canvas.getContext('2d'));
+
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      popup.remove();
+      lock_screen = false;
+    }
+
+
+    popup_content.appendChild(canvas);
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
   }
 }
 
