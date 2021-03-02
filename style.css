@@ -29,3 +29,9 @@
 .modal > .modal-content > h2 {padding: 3vw; margin: 0;}
 .modal > .modal-content > input {margin: 3vw;}
 @keyframes animatetop {from {opacity:0} to {opacity:1}}
+
+
+input[type="radio"]:checked + label {
+  background: #000000;
+  color: white;
+}

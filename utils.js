@@ -448,14 +448,19 @@ class Character{
         radio.id = "radio" + i.toString();
         radio.name = "equipment";
         radio.value = i;
-        radio.style.marginRight = "1vw";
+        radio.style.display = "none";
+
         var label = document.createElement("label");
-        label.for = "radio" + i.toString();
-        label.appendChild(radio);
-        label.innerHTML = label.innerHTML + equipment['name'] + " : " + equipment['desc'];
-        label.style.display = "block";
-        label.style.margin = "1vw";
-        popup_content.appendChild(label);
+        label.textContent = equipment['name'] + " : " + equipment['desc'];
+        label.htmlFor = "radio" + i.toString();
+
+        var div = document.createElement("div");
+        div.style.margin = "1vw";
+
+        if (this.i_player != this.i_client) div.appendChild(radio);
+        div.appendChild(label);
+
+        popup_content.appendChild(div);
       });
 
       var button_take = document.createElement("input");
@@ -473,7 +478,7 @@ class Character{
           }
         }
       }
-      popup_content.appendChild(button_take);
+      if (this.i_player != this.i_client) popup_content.appendChild(button_take);
       popup_content.appendChild(button);
     }
 
