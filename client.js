@@ -99,6 +99,7 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
     characters[i] = new Character(character['align'], character['i'], character['revealed'], character['equipments'],
       [Character.MARGIN + Character.BORDER + i * (Character.WIDTH + 2 * Character.BORDER + Character.MARGIN), .35], i, id);
   });
+  let canvas = document.getElementById('game_canvas');
 
 
   document.addEventListener('mousedown', e => {
@@ -108,14 +109,32 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
       owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(e.offsetX, e.offsetY));
       if (owned_tokens[i].hold) return;
     }
-  });
+  }, false);
 
+  document.addEventListener('touchstart', e => {
+    if (lock_screen) return;
+
+    var bcr = e.target.getBoundingClientRect();
+    var offsetX = e.targetTouches[0].clientX - bcr.x;
+    var offsetY = e.targetTouches[0].clientY - bcr.y;
+
+    owned_tokens.sort((a, b) => {return 10 * (b.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
+    for (let i = 0; i < owned_tokens.length; i++) {
+      owned_tokens[i].hold = owned_tokens[i].collide(...abs2rel(offsetX, offsetY));
+      if (owned_tokens[i].hold) {
+        return;
+      }
+    }
+  }, false);
+
+  // document.onclick = function(e) {
   document.addEventListener('click', e => {
     if (lock_screen) return;
     cards.forEach((card, i) => {if (card.collide(...abs2rel(e.offsetX, e.offsetY))) draw_card(i);});
 
     characters.forEach((character, i) => {if (character.collide(...abs2rel(e.offsetX, e.offsetY))) character.inventory();});
-  });
+  }, false);
+  // };
 
   document.addEventListener('mouseup', e => {
     if (lock_screen) return;
@@ -125,14 +144,41 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
         move_token(tokens.indexOf(token), token.center);
       }
     });
-  });
+  }, false);
+
+  document.addEventListener('touchend', e => {
+    if (lock_screen) return;
+    owned_tokens.forEach((token, i) => {
+      if (token.hold) {
+        token.drop();
+        move_token(tokens.indexOf(token), token.center);
+      }
+    });
+  }, false);
 
   document.addEventListener('mousemove', e => {
     if (lock_screen) return;
     owned_tokens.forEach((token, i) => {if (token.hold) token.center = abs2rel(e.offsetX, e.offsetY);});
 
     characters[id].show = characters[id].collide(...abs2rel(e.offsetX, e.offsetY));
-  });
+  }, false);
+
+  document.addEventListener('touchmove', e => {
+    if (lock_screen) return;
+
+    var bcr = e.target.getBoundingClientRect();
+    var offsetX = e.targetTouches[0].clientX - bcr.x;
+    var offsetY = e.targetTouches[0].clientY - bcr.y;
+
+    owned_tokens.forEach((token, i) => {
+      if (token.hold) {
+        e.preventDefault();
+        token.center = abs2rel(offsetX, offsetY);
+      }
+    });
+
+    characters[id].show = characters[id].collide(...abs2rel(offsetX, offsetY));
+  }, {passive: false});
 
   document.addEventListener('keydown', e => {
     if (lock_screen) return;
@@ -144,11 +190,10 @@ function game(id_player, tokens_center, dices_val, characters_data, areas_order,
         characters[id].reveal();
         break;
     }
-  });
+  }, false);
 
   let background = document.getElementById('background');
   let background_dim = [0.4, 0.4 * background.height / background.width];
-  let canvas = document.getElementById('game_canvas');
   let canvas_ctx = canvas.getContext('2d');
 
   timer_id = setInterval(() => {
