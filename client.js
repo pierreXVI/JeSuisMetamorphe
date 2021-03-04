@@ -31,14 +31,17 @@ socket.on('move_token', (data) => {
 
 socket.on('roll_dice', (data) => {
   dices.forEach((dice, i) => {dice.roll_to(data[i]);});
+  loader_off('roll_dice');
 });
 
 socket.on('reveal', (data) => {
   characters[data].revealed = true;
+  if (data == id) loader_off('reveal');
 });
 
 socket.on('draw_card', (data) => {
   cards[data['type']].draw_card(data['who'], data['i_card']);
+  if (data['who'] == id) loader_off('draw_card');
 });
 
 socket.on('vision', (data) => {
@@ -46,8 +49,8 @@ socket.on('vision', (data) => {
 });
 
 socket.on('take_equipment', (data) => {
-  console.log("Player", data['who'], "takes equipment", data['i_equipment'], "from player", data['i_player']);
   characters[data['who']]['equipments'].push(...characters[data['i_player']]['equipments'].splice(data['i_equipment'], 1));
+  if (data['who'] == id) loader_off('take_equipment');
 });
 
 
@@ -57,14 +60,17 @@ function move_token(i_token){
 
 function roll_dice(){
   socket.emit('roll_dice');
+  loader_on('roll_dice');
 }
 
 function reveal(){
   socket.emit('reveal');
+  loader_on('reveal');
 }
 
 function draw_card(i_card){
   socket.emit('draw_card', i_card);
+  loader_on('draw_card');
 }
 
 function send_vision(i_card, i_player){
@@ -74,6 +80,7 @@ function send_vision(i_card, i_player){
 
 function take_equipment(i_player, i_equipment){
   socket.emit('take_equipment', {'i_player': i_player, 'i_equipment': i_equipment});
+  loader_on('take_equipment');
 }
 
 

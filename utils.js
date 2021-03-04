@@ -806,6 +806,26 @@ const PLAYERS = [
 ]
 
 
+function loader_on(what){
+  var popup = document.createElement("div");
+  popup.className = "modal";
+  var loader = document.createElement("div");
+  loader.className = "loader";
+  loader.id = what;
+  popup.appendChild(loader);
+  document.body.appendChild(popup);
+  lock_screen = true;
+}
+
+function loader_off(what){
+  loader = document.getElementById(what);
+  if (loader) {
+    loader.parentElement.remove();
+    lock_screen = false;
+  }
+}
+
+
 function rel2abs(){
   if (arguments.length == 1) {
     if (arguments[0] instanceof Array) {
