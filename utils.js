@@ -1,7 +1,4 @@
 class Token{
-  static SIZE = 0.007;
-  static SHADE_FACTOR = 0.8;
-
   constructor(color, c_position){
     this.color = color;
     this.color_shade = shade_color(color, Token.SHADE_FACTOR);
@@ -46,15 +43,11 @@ class Token{
     ctx.closePath();
   }
 }
+Token.SIZE = 0.007;
+Token.SHADE_FACTOR = 0.8;
 
 
 class Dice{
-  static SIZE = .025;
-  static ROLL_TIME = 1000;
-  static ROLL_SPEED = 0.05;
-  static COLOR = '#00FF00';
-  static FONT_COLOR = '#FFFFFF'
-
   constructor(n_shape, n_val, center, value){
     this.n_val = n_val;
     this.value = value;
@@ -103,21 +96,14 @@ class Dice{
     this.value = value;
   }
 }
+Dice.SIZE = .025;
+Dice.ROLL_TIME = 1000;
+Dice.ROLL_SPEED = 0.05;
+Dice.COLOR = '#00FF00';
+Dice.FONT_COLOR = '#FFFFFF'
 
 
 class Area{
-  static WIDTH = 0.062;
-  static HEIGHT = 0.087;
-
-  static AREA_LOCATIONS = [
-    {'nw_position': [.266, .249], 'angle': -70},
-    {'nw_position': [.29, .186], 'angle': -70},
-    {'nw_position': [.215, .192], 'angle': 70},
-    {'nw_position': [.192, .13], 'angle': 70},
-    {'nw_position': [.254, .02], 'angle': 0},
-    {'nw_position': [.187, .02], 'angle': 0},
-  ]
-
   constructor(i_area, i_slot){
     this.angle = Math.PI * Area.AREA_LOCATIONS[i_slot]['angle'] / 180;
     this.nw_position = Area.AREA_LOCATIONS[i_slot]['nw_position'];
@@ -170,14 +156,19 @@ class Area{
     ctx.restore();
   }
 }
+Area.WIDTH = 0.062;
+Area.HEIGHT = 0.087;
+Area.AREA_LOCATIONS = [
+  {'nw_position': [.266, .249], 'angle': -70},
+  {'nw_position': [.29, .186], 'angle': -70},
+  {'nw_position': [.215, .192], 'angle': 70},
+  {'nw_position': [.192, .13], 'angle': 70},
+  {'nw_position': [.254, .02], 'angle': 0},
+  {'nw_position': [.187, .02], 'angle': 0},
+]
 
 
 class Character{
-  static WIDTH = .11
-  static HEIGHT = .15
-  static BORDER = .004
-  static MARGIN = .005
-
   constructor(align, i_character, revealed, equipments, nw_position, i_player, i_client){
     this.align = align;
     this.character = CHARACTERS[align][i_character]
@@ -276,7 +267,7 @@ class Character{
       button_no.value = "Non";
       button_no.onclick = function () {
         popup.remove();
-        lock_screen = false;
+        lock_screen = document.getElementsByClassName("modal").length > 0;
       }
       popup_content.appendChild(title);
       popup_content.appendChild(button_yes);
@@ -288,7 +279,7 @@ class Character{
     }
   }
 
-  inventory(){
+  inspect(){
     var popup = document.createElement("div");
     popup.className = "modal";
     var popup_content = document.createElement("div");
@@ -300,15 +291,28 @@ class Character{
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
-      lock_screen = false;
+      lock_screen = document.getElementsByClassName("modal").length > 0;
     }
 
+    var character_0 = characters[this.i_player];
+    var character = new Character(character_0.align, CHARACTERS[character_0.align].indexOf(character_0.character),
+      character_0.revealed || this.i_player == id, [], [Character.BORDER, Character.BORDER], this.i_player, id);
+    var canvas = document.createElement("canvas");
+    canvas.width  = rel2abs(Character.WIDTH + 2 * Character.BORDER);
+    canvas.height = rel2abs(Character.HEIGHT + 2 * Character.BORDER);
+    canvas.style.display = "block";
+    canvas.style.margin = "auto";
+    canvas.style.padding = "1vw";
+    character.draw_on(canvas.getContext('2d'));
+    popup_content.appendChild(canvas);
+
+
     if (this.equipments.length == 0) {
-      title.textContent = "Le joueur " +  this.i_player.toString() + " ne possède pas d'équipements";
+      title.textContent = "Le joueur " +  PLAYERS[this.i_player]['name'] + " ne possède pas d'équipements";
       popup_content.appendChild(title);
       popup_content.appendChild(button);
     } else {
-      title.textContent = "Equipements du joueur " +  this.i_player.toString() + " :";
+      title.textContent = "Equipements du joueur " +  PLAYERS[this.i_player]['name'] + " :";
       popup_content.appendChild(title);
 
       this.equipments.forEach((equipment, i) => {
@@ -342,7 +346,7 @@ class Character{
           if (radios[i].checked) {
             var i_equipment = radios[i].value
             popup.remove();
-            lock_screen = false;
+            lock_screen = document.getElementsByClassName("modal").length > 0;
             take_equipment(i_player, i_equipment);
             break;
           }
@@ -357,14 +361,13 @@ class Character{
     lock_screen = true;
   }
 }
+Character.WIDTH = .11
+Character.HEIGHT = .15
+Character.BORDER = .004
+Character.MARGIN = .005
 
 
 class Card{
-  static WIDTH = .11;
-  static HEIGHT = .15;
-
-  static CARDS = [];
-
   constructor(nw_position, color){
     this.nw_position = nw_position;
     this.color = color;
@@ -384,6 +387,8 @@ class Card{
     ctx.closePath();
   }
 }
+Card.WIDTH = .11;
+Card.HEIGHT = .15;
 
 class BlackCard extends Card {
 
@@ -401,7 +406,7 @@ class BlackCard extends Card {
     var popup_content = document.createElement("div");
     popup_content.className = "modal-content";
     var title = document.createElement("h2");
-    title.textContent = "Le joueur " + who.toString() + " pioche la carte ténèbre :";
+    title.textContent = "Le joueur " + PLAYERS[who]['name'] + " pioche la carte ténèbre :";
     var name = document.createElement("div");
     name.textContent = card['name'];
     var desc = document.createElement("div");
@@ -411,7 +416,7 @@ class BlackCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
-      lock_screen = false;
+      lock_screen = document.getElementsByClassName("modal").length > 0;
     }
     popup_content.appendChild(title);
     popup_content.appendChild(name);
@@ -458,7 +463,7 @@ class VisionCard extends Card {
         if (radios[i].checked) {
           var i_player = radios[i].value
           popup.remove();
-          lock_screen = false;
+          lock_screen = document.getElementsByClassName("modal").length > 0;
           send_vision(i_card, i_player);
           break;
         }
@@ -483,7 +488,7 @@ class VisionCard extends Card {
       var label = document.createElement("label");
       label.for = "radio" + i.toString();
       label.appendChild(radio);
-      label.innerHTML = label.innerHTML + "Joueur " + i.toString();
+      label.innerHTML = label.innerHTML + PLAYERS[i]['name'];
       label.style.display = "block";
       label.style.margin = "1vw";
       popup_content.appendChild(label);
@@ -503,7 +508,7 @@ class VisionCard extends Card {
     var popup_content = document.createElement("div");
     popup_content.className = "modal-content";
     var title = document.createElement("h2");
-    title.textContent = "Le joueur " + i_from.toString() + " vous donne la vision :";
+    title.textContent = "Le joueur " + PLAYERS[i_from]['name'] + " vous donne la vision :";
     var name = document.createElement("div");
     name.textContent = card['name'];
     var desc1 = document.createElement("div");
@@ -515,7 +520,7 @@ class VisionCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
-      lock_screen = false;
+      lock_screen = document.getElementsByClassName("modal").length > 0;
     }
 
     popup_content.appendChild(title);
@@ -552,7 +557,7 @@ class VisionCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
-      lock_screen = false;
+      lock_screen = document.getElementsByClassName("modal").length > 0;
     }
 
 
@@ -581,7 +586,7 @@ class WhiteCard extends Card {
     var popup_content = document.createElement("div");
     popup_content.className = "modal-content";
     var title = document.createElement("h2");
-    title.textContent = "Le joueur " + who.toString() + " pioche la carte lumière :";
+    title.textContent = "Le joueur " + PLAYERS[who]['name'] + " pioche la carte lumière :";
     var name = document.createElement("div");
     name.textContent = card['name'];
     var desc = document.createElement("div");
@@ -591,7 +596,7 @@ class WhiteCard extends Card {
     button.value = "OK";
     button.onclick = function () {
       popup.remove();
-      lock_screen = false;
+      lock_screen = document.getElementsByClassName("modal").length > 0;
     }
     popup_content.appendChild(title);
     popup_content.appendChild(name);
@@ -619,7 +624,7 @@ function loader_off(what){
   loader = document.getElementById(what);
   if (loader) {
     loader.parentElement.remove();
-    lock_screen = false;
+    lock_screen = document.getElementsByClassName("modal").length > 0;
   }
 }
 

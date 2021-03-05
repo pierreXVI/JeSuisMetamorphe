@@ -78,14 +78,13 @@
   function mousedown_handler(e) {
     if (lock_screen) return;
 
-    if (true /* TODO */) {
-      let bcr = e.target.getBoundingClientRect();
-      var offsetX = e.offsetX;
-      var offsetY = e.offsetY;
-    } else {
+    if (e.type == "touchstart") {
       let bcr = e.target.getBoundingClientRect();
       var offsetX = e.targetTouches[0].clientX - bcr.x;
       var offsetY = e.targetTouches[0].clientY - bcr.y;
+    } else {
+      var offsetX = e.offsetX;
+      var offsetY = e.offsetY;
     }
 
     owned_tokens.sort((a, b) => {return 10 * (a.center[1] - b.center[1]) + (a.center[0] - b.center[0])});
@@ -98,7 +97,7 @@
   function click_handler(e) {
     if (lock_screen) return;
     for (var type in cards) {if (cards[type].collide(...abs2rel(e.offsetX, e.offsetY))) draw_card(type);}
-    characters.forEach((character, i) => {if (character.collide(...abs2rel(e.offsetX, e.offsetY))) character.inventory();});
+    characters.forEach((character, i) => {if (character.collide(...abs2rel(e.offsetX, e.offsetY))) character.inspect();});
   }
 
   function mouseup_handler(e) {
@@ -114,14 +113,13 @@
   function mousemove_handler(e) {
     if (lock_screen) return;
 
-    if (true /* TODO */) {
-      let bcr = e.target.getBoundingClientRect();
-      var offsetX = e.offsetX;
-      var offsetY = e.offsetY;
-    } else {
+    if (e.type == "touchmove") {
       let bcr = e.target.getBoundingClientRect();
       var offsetX = e.targetTouches[0].clientX - bcr.x;
       var offsetY = e.targetTouches[0].clientY - bcr.y;
+    } else {
+      var offsetX = e.offsetX;
+      var offsetY = e.offsetY;
     }
 
     owned_tokens.forEach((token, i) => {
@@ -205,7 +203,8 @@
 
     callback_id = setInterval(() => {
       canvas.width  = document.documentElement.clientWidth;
-      canvas.height = document.documentElement.clientHeight;
+      canvas.height = Math.max(document.documentElement.clientHeight,
+        document.documentElement.clientWidth * (.35 + Character.HEIGHT + Character.BORDER + Character.MARGIN));
 
       canvas_ctx.drawImage(background, 0, 0, ...rel2abs(background_dim));
       areas.forEach((area, i) => area.draw_on(canvas_ctx));
