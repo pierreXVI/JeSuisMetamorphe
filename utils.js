@@ -4,7 +4,7 @@ class Token{
 
   constructor(color, c_position){
     this.color = color;
-    this.color_shade = Token.shade_color(color, Token.SHADE_FACTOR);
+    this.color_shade = shade_color(color, Token.SHADE_FACTOR);
     this.center = c_position;
     this.hold = false;
     this.offset = [0, 0];
@@ -44,13 +44,6 @@ class Token{
     ctx.ellipse(...rel2abs(x, y - Token.SIZE, Token.SIZE, Token.SIZE / 2), 0, 0, 2 * Math.PI);
     ctx.fill();
     ctx.closePath();
-  }
-
-  static shade_color(color, factor) {
-    var r = Math.min(parseInt(parseInt(color.substring(1, 3), 16) * factor), 255).toString(16);
-    var g = Math.min(parseInt(parseInt(color.substring(3, 5), 16) * factor), 255).toString(16);
-    var b = Math.min(parseInt(parseInt(color.substring(5, 7), 16) * factor), 255).toString(16);
-    return '#' + ((r.length==1) ? '0' + r:r) + ((g.length==1) ? '0' + g:g) + ((b.length==1) ? '0' + b:b);
   }
 }
 
@@ -116,15 +109,6 @@ class Area{
   static WIDTH = 0.062;
   static HEIGHT = 0.087;
 
-  static AREAS = [
-    {'values': [2, 3], 'name': "Antre de l'ermite", 'text': "Vous pouvez piocher\nune carte Vision"},
-    {'values': [4, 5], 'name': "Porte de l'Outremonde", 'text': "Vous pouvez piocher\nune carte dans la pile\nde votre choix"},
-    {'values': [6], 'name': "Monastère", 'text': "Vous pouvez piocher\nune carte Lumière"},
-    {'values': [8], 'name': "Cimetière", 'text': "Vous pouvez piocher\nune carte Ténèbres"},
-    {'values': [9], 'name': "Forêt hantée", 'text': "Le joueur de votre choix\npeut subir 2 blessures\nOU soigner 1 blessure"},
-    {'values': [10], 'name':  "Sanctuaire ancien", 'text': "Vous pouvez voler\nune carte équipement\nà un autre joueur"}
-  ];
-
   static AREA_LOCATIONS = [
     {'nw_position': [.266, .249], 'angle': -70},
     {'nw_position': [.29, .186], 'angle': -70},
@@ -137,9 +121,9 @@ class Area{
   constructor(i_area, i_slot){
     this.angle = Math.PI * Area.AREA_LOCATIONS[i_slot]['angle'] / 180;
     this.nw_position = Area.AREA_LOCATIONS[i_slot]['nw_position'];
-    this.values = Area.AREAS[i_area]['values'];
-    this.name = Area.AREAS[i_area]['name'];
-    this.text = Area.AREAS[i_area]['text'];
+    this.values = AREAS[i_area]['values'];
+    this.name = AREAS[i_area]['name'];
+    this.text = AREAS[i_area]['text'];
   }
 
   draw_on(ctx){
@@ -194,131 +178,16 @@ class Character{
   static BORDER = .004
   static MARGIN = .005
 
-  static CHARACTERS = {
-    'Shadow': [
-      {'name': 'Métamorphe',
-      'hp': 11,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Pouvoir permanent : Imitation",
-      'ability_desc': "Vous pouvez mentir (sans\navoir à révéler votre identité)\nlorsqu'on vous donne\nune carte Vision."},
-      {'name': 'Momie',
-      'hp': 11,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Capacité spéciale :\nRayon d'Outremonde",
-      'ability_desc': "Au début de votre tour,\nvous pouvez infliger 3 Blessures\nà un joueur présent dans le Lieu\nPorte de l'Outremonde."},
-      {'name': 'Vampire',
-      'hp': 13,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Capacité spéciale : Morsure",
-      'ability_desc': "Si vous attaquez un joueur\net lui infligez des Blessures,\nsoignez immédiatement\n2 de vos Blessures."},
-      {'name': 'Valkyrie',
-      'hp': 13,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Capacité spéciale : Chant de guerre",
-      'ability_desc': "Quand vous attaquez,\nlancez seulement le dé à 4 faces\npour déterminer les dégats."},
-      {'name': 'Loup-Garou',
-      'hp': 14,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Capacité spéciale : Contre-attaque",
-      'ability_desc': "Après avoir subi l'attaque\nd'un joueur, vous pouvez\ncontre-attaquer immédiatement."},
-      {'name': 'Liche',
-      'hp': 14,
-      'victory': "Tous les personnages Hunter\nsont morts ou 3 personnages\nNeutres sont morts.",
-      'ability': "Capacité spéciale : Nécromancie",
-      'ability_desc': "Vous pouvez rejouer autant de fois\nqu'il y a de personnages morts.\nUtilisation unique."}
-    ],
-    'Neutral': [
-      {'name': 'Allie',
-      'hp': 8,
-      'victory': "Etre encore en vie lorsque\nla partie se termine.",
-      'ability': "Capacité spéciale : Amour maternel",
-      'ability_desc': "Soignez toutes vos blessures.\nUtilisation unique."},
-      {'name': 'Agnes',
-      'hp': 8,
-      'victory': "Le joueur à votre droite gagne.",
-      'ability': "Capacité spéciale : Caprice",
-      'ability_desc': "Au début de votre tour, changez\nvotre condition de victoire par :\n\"Le joueur à votre gauche gagne\""},
-      {'name': 'Daniel',
-      'hp': 13,
-      'victory': "Etre le premier à mourir\nOU être en vie quand tous\nles personnages Shadow\nsont morts.",
-      'ability': "Particularité : Désespoir",
-      'ability_desc': "Dès qu'un personnage meurt,\nvous devez révéler\nvotre identité."},
-      {'name': 'David',
-      'hp': 13,
-      'victory': "Avoir au minimum 3 de ces cartes :\nCrucifix en argent, Amulette,\nLance de Longinus, Toge sainte.",
-      'ability': "Capacité spéclass :\nPilleur de tombes",
-      'ability_desc': "Récupérez dans la défausse la\ncarte équipement de votre choix.\nUtilisation unique."},
-      {'name': 'Charles',
-      'hp': 11,
-      'victory': "Tuer un personnage par\nune attaque alors qu'il y a\ndéjà eu 3 morts ou plus.",
-      'ability': "Capacité spéciale : Festin sanglant",
-      'ability_desc': "Après votre attaque, vous pouvez\nvous infliger 2 Blessures afin\nd'attaquer de nouveau\nle même joueur."},
-      {'name': 'Catherine',
-      'hp': 11,
-      'victory': "Être la première à mourir\nOU être l'un des deux\nseuls personnages en vie.",
-      'ability': "Capacité spéciale : Stigmates",
-      'ability_desc': "Guerissez de 1 Blessure\nau début de votre tour."},
-      {'name': 'Bryan',
-      'hp': 10,
-      'victory': "Tuer un personnage de\n13 Points de Vie ou plus,\nOU être dans le Sanctuaire ancien\nà la fin du jeu.",
-      'ability': "Particularité : Oh my god !",
-      'ability_desc': "Si vous tuez un personnage de\n12 Points de Vie ou moins,\nvous devez révéler votre identité."},
-      {'name': 'Bob',
-      'hp': 10,
-      'victory': "Posséder 5 cartes équipements\nou plus.",
-      'ability': "Capacité spéciale : Braquage",
-      'ability_desc': "Si vous tuez un personnage,\nvous pouvez récupérer\ntoutes ses cartes équipements."}
-    ],
-    'Hunter': [
-      {'name': 'Emi',
-      'hp': 10,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale : Téléportation",
-      'ability_desc': "Pour vous déplacer, vous pouvez\nlancer normalement les dés,\nou vous déplacer sur\nla carte lieu adjacente."},
-      {'name': 'Ellen',
-      'hp': 10,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale : Exorcisme",
-      'ability_desc': "Au début de votre tour,\nvous pouvez désigner un joueur.\nIl perd sa capacité spéciale\njusqu'à la fin de la partie.\nUtilisation unique."},
-      {'name': 'Georges',
-      'hp': 14,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale : Démolition",
-      'ability_desc': "Au début de votre tour, choisissez\nun joueur et infligez lui autant\nde blessures que le résultat\nd'un dé à 4 faces.\nUtilisation unique."},
-      {'name': 'Gregor',
-      'hp': 14,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale :\nBouclier fantôme",
-      'ability_desc': "Ce pouvoir peut s'activer à la fin\nde votre tour. Vous ne subissez\naucune Blessure jusqu'au début\nde votre prochain tour.\nUtilisation unique."},
-      {'name': 'Franklin',
-      'hp': 12,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale : Poudre",
-      'ability_desc': "Au début de votre tour, choisissez\nun joueur et infligez lui autant\nde blessures que le résultat\nd'un dé à 6 faces.\nUtilisation unique."},
-      {'name': 'Fu-Ka',
-      'hp': 12,
-      'victory': "Tous les personnages Shadow\nsont morts.",
-      'ability': "Capacité spéciale :\nSoins particuliers",
-      'ability_desc': "Au début de votre tour,\nplacez le marqueur\nde Blessures d'un joueur sur 7.\nUtilisation unique."}
-    ]
-  };
-
   constructor(align, i_character, revealed, equipments, nw_position, i_player, i_client){
     this.align = align;
-    this.character = Character.CHARACTERS[align][i_character]
+    this.character = CHARACTERS[align][i_character]
     this.revealed = revealed;
     this.nw_position = nw_position;
     this.i_player = i_player;
     this.i_client = i_client;
     this.show = false;
     this.equipments = [];
-    equipments.forEach((equipment, i) => {
-      if (equipment['type'] == 0) {
-        this.equipments.push(BlackCard.CARDS[equipment['i_card']]);
-      } else if (equipment['type'] == 2) {
-        this.equipments.push(WhiteCard.CARDS[equipment['i_card']]);
-      }
-    });
+    equipments.forEach((equipment, i) => this.equipments.push(CARDS[equipment['type']][equipment['i_card']]));
   }
 
   collide(x, y){
@@ -514,37 +383,16 @@ class Card{
     ctx.stroke();
     ctx.closePath();
   }
-
-  draw_card(){}
 }
 
 class BlackCard extends Card {
-
-  static CARDS = [
-    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
-    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
-    {'name': "Chauve-souris vampire", 'equip': false, 'desc': "Infligez 2 Blessures au joueur de votre choix, puis soignez une de vos Blessures."},
-    {'name': "Succube tentatrice",    'equip': false, 'desc': "Volez une carte équipement au joueur de votre choix."},
-    {'name': "Succube tentatrice",    'equip': false, 'desc': "Volez une carte équipement au joueur de votre choix."},
-    {'name': "Araignée sanguinaire",  'equip': false, 'desc': "Vous infligez 2 Blessures au personnage de votre choix, puis vous subissez vous-même 2 Blessures."},
-    {'name': "Poupée démoniaque",     'equip': false, 'desc': "Désignez un joueur et lancez le dé à 6 faces. 1 à 4 : infligez lui 3 Blessures. 5 ou 6 subissez 3 Blessures."},
-    {'name': "Dynamite",              'equip': false, 'desc': "Lancez les 2 dés et infligez 3 Blessures à tous les joueurs (vous compris) se trouvant dans le secteur désigné par le total des 2 dés. Il ne se passe rien si ce total est 7."},
-    {'name': "Rituel diabolique",     'equip': false, 'desc': "Si vous êtes un Shadow, et si vous décidez de révéler (ou avez déjà révélé) votre identité, soignez toutes vos Blessures."},
-    {'name': "Peau de banane",        'equip': false, 'desc': "Donnez une de vos cartes équipements à un autre personnage. Si vous n'en possédez aucune, vous encaissez 1 Blessure."},
-    {'name': "Tronçonneuse du mal",   'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
-    {'name': "Hachoir maudit",        'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
-    {'name': "Hache tueuse",          'equip': true,  'desc': "Si votre attaque inflige des Blessures, la victime subit 1 Blessure en plus."},
-    {'name': "Revolver des ténèbres", 'equip': true,  'desc': "Vous pouvez attaquer un joueur présent sur l'un des 4 lieux hors de votre secteur, mais vous ne pouvez plus attaquer un joueur situé dans le même secteur que vous."},
-    {'name': "Sabre hanté Masamuné",  'equip': true,  'desc': "Vous êtes obligé d'attaquer durant votre tour. Lancez uniquement le dé à 4 faces, le résultat indique les Blessures que vous infligez."},
-    {'name': "Mitrailleuse funeste",  'equip': true,  'desc': "Votre attaque affecte tous les personnages qui sont à votre porté. Effectuez un seul jet de Blessures pour tous les joueurs concernés."}
-  ]
 
   constructor(nw_position) {
     super(nw_position, '#141414');
   }
 
   draw_card(who, i_card){
-    var card = BlackCard.CARDS[i_card];
+    var card = CARDS['Black'][i_card];
     if (card['equip']) {
       characters[who].equipments.push(card);
     }
@@ -577,25 +425,6 @@ class BlackCard extends Card {
 
 class VisionCard extends Card {
 
-  static CARDS = [
-    {'name': "Vision suprème",       'desc1': "",                                                              'desc2': "Monte moi secrètement ta carte Personnage !"},
-    {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
-    {'name': "Vision cupide",        'desc1': "Je pense que tu es Neutre ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
-    {'name': "Vision enivrante",     'desc1': "Je pense que tu es Neutre ou Hunter",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure"},
-    {'name': "Vision enivrante",     'desc1': "Je pense que tu es Neutre ou Hunter",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure"},
-    {'name': "Vision furtive",       'desc1': "Je pense que tu es Hunter ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
-    {'name': "Vision furtive",       'desc1': "Je pense que tu es Hunter ou Shadow",                           'desc2': "Si c'est le cas, tu dois : soit me donner une carte équipement, soit subir une Blessure."},
-    {'name': "Vision mortifère",     'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
-    {'name': "Vision mortifère",     'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
-    {'name': "Vision destructrice",  'desc1': "Je pense que tu es un personnage de 12 Points de vie ou plus",  'desc2': "Si c'est le cas, subis 2 Blessures !"},
-    {'name': "Vision clairvoyante",  'desc1': "Je pense que tu es un personnage de 11 Points de vie ou moins", 'desc2': "Si c'est le cas, subis 1 Blessures !"},
-    {'name': "Vision divine",        'desc1': "Je pense que tu es Hunter",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
-    {'name': "Vision réconfortante", 'desc1': "Je pense que tu es Neutre",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
-    {'name': "Vision lugubre",       'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, soigne 1 Blessure. (Toutefois, si tu n'avais aucune blessure, subis 1 Blessure !)"},
-    {'name': "Vision foudroyante",   'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 1 Blessure !"},
-    {'name': "Vision purificatrice", 'desc1': "Je pense que tu es Shadow",                                     'desc2': "Si c'est le cas, subis 2 Blessures !"}
-  ]
-
   constructor(nw_position) {
     super(nw_position, '#00FF00');
   }
@@ -604,7 +433,7 @@ class VisionCard extends Card {
     if (who != id) {
       return;
     }
-    var card = VisionCard.CARDS[i_card];
+    var card = CARDS['Vision'][i_card];
 
     var popup = document.createElement("div");
     popup.className = "modal";
@@ -667,7 +496,7 @@ class VisionCard extends Card {
   }
 
   answer(i_card, i_from){
-    var card = VisionCard.CARDS[i_card];
+    var card = CARDS['Vision'][i_card];
 
     var popup = document.createElement("div");
     popup.className = "modal";
@@ -703,7 +532,7 @@ class VisionCard extends Card {
   view_character(i_player){
     var character_0 = characters[i_player];
 
-    var character = new Character(character_0.align, Character.CHARACTERS[character_0.align].indexOf(character_0.character),
+    var character = new Character(character_0.align, CHARACTERS[character_0.align].indexOf(character_0.character),
       true, [], [Character.BORDER, Character.BORDER], i_player, id);
 
     var popup = document.createElement("div");
@@ -737,31 +566,12 @@ class VisionCard extends Card {
 
 class WhiteCard extends Card {
 
-  static CARDS = [
-    {'name': "Éclair purificateur", 'equip': false, 'desc': "Chaque personnage, à l'exception de vous même, subit 2 Blessures."},
-    {'name': "Eau bénite",          'equip': false, 'desc': "Vous êtes soigné de 2 Blessures."},
-    {'name': "Eau bénite",          'equip': false, 'desc': "Vous êtes soigné de 2 Blessures."},
-    {'name': "Savoir ancestral",    'equip': false, 'desc': "Lorsque votre tour est terminé, jouez immédiatement un nouveau tour."},
-    {'name': "Avènement suprème",   'equip': false, 'desc': "Si vous êtes un Hunter, vous pouvez révéler votre identité. Si vous le faites, ou si vous êtes déjà révélé, vous soignez toutes vos Blessures."},
-    {'name': "Miroir divin",        'equip': false, 'desc': "Si vous êtes un Shadow, autre que Métamorphe, vous devez révéler votre identité."},
-    {'name': "Premiers secours",    'equip': false, 'desc': "Placez le marqueur de Blessures du joueur de votre choix (y compris vous) sur le 7."},
-    {'name': "Ange gardien",        'equip': false, 'desc': "Les attaques ne vous infligent aucune Blessure jusqu'à la fin de votre prochain tour."},
-    {'name': "Barre de chocolat",   'equip': false, 'desc': "Si vous êtes Allie, Agnes, Emi, Ellen, Momie ou Métamorphe, et que vous choisissez de révéler (ou avez déjà révélé) votre identité, vous soignez toutes vos Blessures."},
-    {'name': "Bénédiction",         'equip': false, 'desc': "Choisissez un joueur autre que vous même et lancez le dé à 6 faces. Ce joueur guérit d'autant de Blessures que le résultat du dé."},
-    {'name': "Crucifix en argent",  'equip': true,  'desc': "Si vous attaquez et tuez un autre personnage, vous récupérez toutes ses cartes équipements."},
-    {'name': "Toge sainte",         'equip': true,  'desc': "Vos attaques infligent 1 Blessure en moins, et les Blessures que vous subissez sont réduites de 1."},
-    {'name': "Lance de Longinus",   'equip': true,  'desc': "Si vous êtes un Hunter, et que votre identité est révélée, chaque fois qu'une de vos attaque inflige des Blessures, vous infligez 2 Blessures supplémentaires."},
-    {'name': "Amulette",            'equip': true,  'desc': "Vous ne subissez aucune Blessure causée par les cartes Ténèbres : Araignée sanguinaire, Dynamite ou Chauve-souris vampire."},
-    {'name': "Broche de chance",    'equip': true,  'desc': "Un joueur dans la Forêt hantée ne peut pas utiliser le pouvoir du Lieu pour vous infliger des Blessures (mais il peut toujours vous guérir)."},
-    {'name': "Boussole mystique",   'equip': true,  'desc': "Quand vous vous déplacez, vous pouvez lancer 2 fois les dés, et choisir quel résultat utiliser."},
-  ]
-
   constructor(nw_position) {
     super(nw_position, '#FFFFFF');
   }
 
   draw_card(who, i_card){
-    var card = WhiteCard.CARDS[i_card];
+    var card = CARDS['White'][i_card];
     if (card['equip']) {
       characters[who].equipments.push(card);
     }
@@ -792,18 +602,6 @@ class WhiteCard extends Card {
     lock_screen = true;
   }
 }
-
-
-const PLAYERS = [
-  {'name': 'Rouge', 'color': '#FF0000'},
-  {'name': "Vert", 'color': '#00FF00'},
-  {'name': "Bleu", 'color': '#0000FF'},
-  {'name': "Blanc", 'color': '#FFFFFF'},
-  {'name': "TODO", 'color': '#FF9632'},
-  {'name': "TODO", 'color': '#FFFF00'},
-  {'name': "TODO", 'color': '#6400C8'},
-  {'name': "TODO", 'color': '#141414'},
-]
 
 
 function loader_on(what){
@@ -876,20 +674,9 @@ function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null){
 }
 
 
-Object.defineProperty(Array.prototype, 'shuffle', {
-    value: function() {
-        for (let i = this.length - 1; i > 0; i--) {
-            let j = Math.floor(Math.random() * (i + 1));
-            [this[i], this[j]] = [this[j], this[i]];
-        }
-        return this;
-    }
-});
-
-
-if (typeof module !== 'undefined'){
-  module.exports = {
-    Areas: Area.AREAS,
-    Cards: [BlackCard.CARDS, VisionCard.CARDS, WhiteCard.CARDS]
-  };
+function shade_color(color, factor) {
+  var r = Math.min(parseInt(parseInt(color.substring(1, 3), 16) * factor), 255).toString(16);
+  var g = Math.min(parseInt(parseInt(color.substring(3, 5), 16) * factor), 255).toString(16);
+  var b = Math.min(parseInt(parseInt(color.substring(5, 7), 16) * factor), 255).toString(16);
+  return '#' + ((r.length==1) ? '0' + r:r) + ((g.length==1) ? '0' + g:g) + ((b.length==1) ? '0' + b:b);
 }
