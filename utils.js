@@ -10,7 +10,9 @@ class Token{
   collide(x, y){
     var dx = (x - this.center[0]) / Token.SIZE;
     var dy = (y - this.center[1]) / Token.SIZE;
-    if ((Math.abs(dx) < 1 && Math.abs(dy) < 1) || dx ** 2 + (2 * dy + 2) ** 2 < 1 || dx ** 2 + (2 * dy - 2) ** 2 < 1){
+    if ((Math.abs(dx) < 1 && Math.abs(dy) < 1)
+        || Math.pow(dx, 2) + Math.pow(2 * dy + 2, 2) < 1
+        || Math.pow(dx, 2) + Math.pow(2 * dy - 2, 2) < 1){
       this.offset = [dx * Token.SIZE, dy * Token.SIZE];
       this.center = [this.center[0] + this.offset[0], this.center[1] + this.offset[1]];
       return true;
@@ -31,14 +33,14 @@ class Token{
 
     ctx.fillStyle = this.color_shade;
     ctx.beginPath();
-    ctx.ellipse(...rel2abs(x, y + Token.SIZE, Token.SIZE, Token.SIZE / 2), 0, 0, 2 * Math.PI);
+    ctx.ellipse.apply(ctx, rel2abs(x, y + Token.SIZE, Token.SIZE, Token.SIZE / 2).concat([0, 0, 2 * Math.PI]));
     ctx.rect(...rel2abs(x - Token.SIZE, y - Token.SIZE, 2 * Token.SIZE, 2 * Token.SIZE));
     ctx.fill();
     ctx.closePath();
 
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.ellipse(...rel2abs(x, y - Token.SIZE, Token.SIZE, Token.SIZE / 2), 0, 0, 2 * Math.PI);
+    ctx.ellipse.apply(ctx, rel2abs(x, y - Token.SIZE, Token.SIZE, Token.SIZE / 2).concat([0, 0, 2 * Math.PI]));
     ctx.fill();
     ctx.closePath();
   }
@@ -63,19 +65,19 @@ class Dice{
   collide(x, y){
     var dx = (x - this.center[0]) / Dice.SIZE;
     var dy = (y - this.center[1]) / Dice.SIZE;
-    return dx ** 2 + dy ** 2 < 1;
+    return Math.pow(dx, 2) + Math.pow(dy, 2) < 1;
   }
 
   draw_on(ctx){
     if (this.roll_since != -1 && Date.now() - this.roll_since < Dice.ROLL_TIME){
-      this.edges.forEach((edge, i) => {
-        var dx = edge[0] - this.center[0];
-        var dy = edge[1] - this.center[1];
+      for (var i in this.edges) {
+        var dx = this.edges[i][0] - this.center[0];
+        var dy = this.edges[i][1] - this.center[1];
         var c = Math.cos(Dice.ROLL_SPEED * Math.PI);
         var s = Math.sin(Dice.ROLL_SPEED * Math.PI);
-        edge[0] = this.center[0] + c * dx + s * dy;
-        edge[1] = this.center[1] - s * dx + c * dy;
-      });
+        this.edges[i][0] = this.center[0] + c * dx + s * dy;
+        this.edges[i][1] = this.center[1] - s * dx + c * dy;
+      }
       var value = Math.floor(Math.random() * this.n_val) + 1;
     } else {
       this.roll_since = -1;
@@ -85,7 +87,7 @@ class Dice{
     ctx.fillStyle = Dice.COLOR;
     ctx.beginPath();
     ctx.moveTo(...rel2abs(this.edges[0]));
-    this.edges.forEach((edge, i) => {ctx.lineTo(...rel2abs(edge));});
+    for (var i in this.edges) ctx.lineTo(...rel2abs(this.edges[i]));
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
@@ -94,7 +96,7 @@ class Dice{
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'center';
     ctx.font = 'bold 1.5vw Arial';
-    ctx.fillText(value, ...rel2abs(this.center));
+    ctx.fillText.apply(ctx, [value].concat(rel2abs(this.center)));
   }
 
   roll_to(value){
@@ -124,21 +126,21 @@ class Area{
     ctx.translate(...rel2abs(this.nw_position));
     ctx.rotate(this.angle);
     ctx.beginPath();
-    ctx.rect(0, 0, ...rel2abs(Area.WIDTH, Area.HEIGHT));
+    ctx.rect.apply(ctx, [0, 0].concat(rel2abs(Area.WIDTH, Area.HEIGHT)));
     ctx.fill();
     ctx.closePath();
 
     if (this.values.length == 2) {
       ctx.fillStyle = '#646464';
       ctx.beginPath();
-      ctx.arc(...rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
-      ctx.arc(...rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
+      ctx.arc.apply(ctx, rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .15).concat([0, 2 * Math.PI, false]));
+      ctx.arc.apply(ctx, rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .15).concat([0, 2 * Math.PI, false]));
       ctx.fill();
       ctx.closePath();
     } else {
       ctx.fillStyle = '#646464';
       ctx.beginPath();
-      ctx.arc(...rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .15), 0, 2 * Math.PI, false);
+      ctx.arc.apply(ctx, rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .15).concat([0, 2 * Math.PI, false]));
       ctx.fill();
       ctx.closePath();
     }
@@ -148,16 +150,16 @@ class Area{
     ctx.textAlign = 'center';
     ctx.font = 'bold 1vw Arial';
     if (this.values.length == 2) {
-      ctx.fillText(this.values[0], ...rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .95));
-      ctx.fillText(this.values[1], ...rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .95));
+      ctx.fillText.apply(ctx, [this.values[0]].concat(rel2abs(Area.WIDTH * (.5 + .2), Area.HEIGHT * .2, Area.WIDTH * .95)));
+      ctx.fillText.apply(ctx, [this.values[1]].concat(rel2abs(Area.WIDTH * (.5 - .2), Area.HEIGHT * .2, Area.WIDTH * .95)));
     } else {
-      ctx.fillText(this.values[0], ...rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .95));
+      ctx.fillText.apply(ctx, [this.values[0]].concat(rel2abs(Area.WIDTH * .5, Area.HEIGHT * .2, Area.WIDTH * .95)));
     }
     ctx.textBaseline = 'alphabetic';
     ctx.font = 'bold 0.6vw Arial';
-    ctx.fillText(this.name, ...rel2abs(Area.WIDTH / 2, Area.HEIGHT * .4, Area.WIDTH * .95));
+    ctx.fillText.apply(ctx, [this.name].concat(rel2abs(Area.WIDTH / 2, Area.HEIGHT * .4, Area.WIDTH * .95)));
     ctx.font = 'bold 0.5vw Arial';
-    fillTextMultiLine(ctx, this.text, ...rel2abs(0.007, Area.WIDTH / 2, Area.HEIGHT * .6, Area.WIDTH * .95));
+    fillTextMultiLine.apply(null, [ctx, this.text].concat(rel2abs(0.007, Area.WIDTH / 2, Area.HEIGHT * .6, Area.WIDTH * .95)));
 
     ctx.restore();
   }
@@ -184,7 +186,7 @@ class Character{
     this.i_client = i_client;
     this.show = false;
     this.equipments = [];
-    equipments.forEach((equipment, i) => this.equipments.push(CARDS[equipment['type']][equipment['i_card']]));
+    for (var i in equipments) this.equipments.push(CARDS[equipments[i]['type']][equipments[i]['i_card']]);
   }
 
   collide(x, y){
@@ -206,54 +208,53 @@ class Character{
     if (this.revealed || this.show) {
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.rect(0, 0, ...rel2abs(Character.WIDTH, Character.HEIGHT));
+      ctx.rect.apply(ctx, [0, 0].concat(rel2abs(Character.WIDTH, Character.HEIGHT)));
       ctx.fill();
       ctx.closePath();
 
       ctx.fillStyle = this.align == 'Shadow' ? '#FF0000' : this.align == 'Hunter' ? '#0000FF' : '#F09632';
       ctx.beginPath();
-      ctx.arc(...rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1,  Character.WIDTH * .08), 0, 2 * Math.PI, false);
+      ctx.arc.apply(ctx, rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1,  Character.WIDTH * .08).concat([0, 2 * Math.PI, false]));
       ctx.fill();
       ctx.closePath();
       ctx.fillStyle = "#000000";
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
       ctx.font = 'bold 1.2vw Arial';
-      ctx.fillText(this.character['name'][0], ...rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1));
+      ctx.fillText.apply(ctx, [this.character['name'][0]].concat(rel2abs(Character.WIDTH * .1, Character.HEIGHT * .1)));
       ctx.textAlign = 'left';
-      ctx.fillText(this.character['name'].slice(1, this.character['name'].length),
-        ...rel2abs(Character.WIDTH * .18, Character.HEIGHT * .12));
+      ctx.fillText.apply(ctx, [this.character['name'].slice(1, this.character['name'].length)].concat(rel2abs(Character.WIDTH * .18, Character.HEIGHT * .12)));
 
       ctx.fillStyle = '#FF0000';
       ctx.beginPath();
-      ctx.arc(...rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08,  Character.WIDTH * .07), 0, 2 * Math.PI, false);
+      ctx.arc.apply(ctx, rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08,  Character.WIDTH * .07).concat([0, 2 * Math.PI, false]));
       ctx.fill();
       ctx.closePath();
       ctx.fillStyle = "#000000";
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
       ctx.font = 'bold 1vw Arial';
-      ctx.fillText(this.character['hp'], ...rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08));
+      ctx.fillText.apply(ctx, [this.character['hp']].concat(rel2abs(Character.WIDTH * .9, Character.HEIGHT * .08)));
       ctx.textAlign = 'right';
-      ctx.fillText("PV", ...rel2abs(Character.WIDTH * .83, Character.HEIGHT * .08));
+      ctx.fillText.apply(ctx, ["PV"].concat(rel2abs(Character.WIDTH * .83, Character.HEIGHT * .08)));
 
       ctx.fillStyle = "#000000";
       ctx.textBaseline = 'middle';
       ctx.textAlign = 'center';
       ctx.font = 'bold 1vw Arial';
-      ctx.fillText("Condition de victoire :", ...rel2abs(Character.WIDTH * .5, Character.HEIGHT * .3, Character.WIDTH * .95));
+      ctx.fillText.apply(ctx, ["Condition de victoire :"].concat(rel2abs(Character.WIDTH * .5, Character.HEIGHT * .3, Character.WIDTH * .95)));
       ctx.font = '.8vw Arial';
-      fillTextMultiLine(ctx, this.character['victory'], ...rel2abs(.007, Character.WIDTH * .5, Character.HEIGHT * .37, Character.WIDTH * .95));
+      fillTextMultiLine.apply(null, [ctx, this.character['victory']].concat(rel2abs(.007, Character.WIDTH * .5, Character.HEIGHT * .37, Character.WIDTH * .95)));
       ctx.font = 'bold 1vw Arial';
       var y = Character.HEIGHT * .6;
-      y = fillTextMultiLine(ctx, this.character['ability'], ...rel2abs(.01, Character.WIDTH * .5, y, Character.WIDTH * .95));
+      y = fillTextMultiLine.apply(null, [ctx, this.character['ability']].concat(rel2abs(.01, Character.WIDTH * .5, y, Character.WIDTH * .95)));
       ctx.font = '.8vw Arial';
-      fillTextMultiLine(ctx, this.character['ability_desc'], ...rel2abs(.007, Character.WIDTH * .5, abs2rel(y), Character.WIDTH * .95));
+      fillTextMultiLine.apply(null, [ctx, this.character['ability_desc']].concat(rel2abs(.007, Character.WIDTH * .5, abs2rel(y), Character.WIDTH * .95)));
     }
     ctx.restore();
   }
 
-  reveal(){
+  ask_reveal(){
     if (! this.revealed) {
       var popup = document.createElement("div");
       popup.className = "modal";
@@ -312,6 +313,14 @@ class Character{
     character.draw_on(canvas.getContext('2d'));
     popup_content.appendChild(canvas);
 
+    var button_reveal = document.createElement("input");
+    button_reveal.type = "button";
+    button_reveal.value = "Se réveler";
+    button_reveal.onclick = function() {
+      popup.remove();
+      characters[id].ask_reveal();
+    }
+    if (this.i_player == this.i_client && !this.revealed) popup_content.appendChild(button_reveal);
 
     if (this.equipments.length == 0) {
       title.textContent = "Le joueur " +  PLAYERS[this.i_player]['name'] + " ne possède pas d'équipements";
@@ -321,7 +330,7 @@ class Character{
       title.textContent = "Equipements du joueur " +  PLAYERS[this.i_player]['name'] + " :";
       popup_content.appendChild(title);
 
-      this.equipments.forEach((equipment, i) => {
+      for (var i in this.equipments) {
         var radio = document.createElement("input");
         radio.type = "radio";
         radio.id = "radio" + i.toString();
@@ -330,7 +339,7 @@ class Character{
         radio.style.display = "none";
 
         var label = document.createElement("label");
-        label.textContent = equipment['name'] + " : " + equipment['desc'];
+        label.textContent = this.equipments[i]['name'] + " : " + this.equipments[i]['desc'];
         label.htmlFor = "radio" + i.toString();
 
         var div = document.createElement("div");
@@ -340,7 +349,7 @@ class Character{
         div.appendChild(label);
 
         popup_content.appendChild(div);
-      });
+      }
 
       var i_player = this.i_player;
       var button_take = document.createElement("input");
@@ -387,7 +396,7 @@ class Card{
   draw_on(ctx){
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.rect(...rel2abs(...this.nw_position, Card.WIDTH, Card.HEIGHT));
+    ctx.rect(...rel2abs(this.nw_position).concat(rel2abs(Card.WIDTH, Card.HEIGHT)));
     ctx.fill();
     ctx.stroke();
     ctx.closePath();
@@ -638,8 +647,8 @@ function loader_off(what){
 function rel2abs(){
   if (arguments.length == 1) {
     if (arguments[0] instanceof Array) {
-      let out = new Array(arguments[0].length);
-      for (let i = 0; i < arguments[0].length; i++) {
+      out = new Array(arguments[0].length);
+      for (i = 0; i < arguments[0].length; i++) {
         out[i] = arguments[0][i] * document.documentElement.clientWidth;
       }
       return out;
@@ -648,8 +657,8 @@ function rel2abs(){
     }
   }
 
-  let out = new Array(arguments.length);
-  for (let i = 0; i < arguments.length; i++) {
+  out = new Array(arguments.length);
+  for (i = 0; i < arguments.length; i++) {
     out[i] = arguments[i] * document.documentElement.clientWidth;
   }
   return out;
@@ -658,8 +667,8 @@ function rel2abs(){
 function abs2rel(){
   if (arguments.length == 1) {
     if (arguments[0] instanceof Array) {
-      let out = new Array(arguments[0].length);
-      for (let i = 0; i < arguments[0].length; i++) {
+      out = new Array(arguments[0].length);
+      for (i = 0; i < arguments[0].length; i++) {
         out[i] = arguments[0][i] / document.documentElement.clientWidth;
       }
       return out;
@@ -668,19 +677,21 @@ function abs2rel(){
     }
   }
 
-  let out = new Array(arguments.length);
-  for (let i = 0; i < arguments.length; i++) {
+  out = new Array(arguments.length);
+  for (i = 0; i < arguments.length; i++) {
     out[i] = arguments[i] / document.documentElement.clientWidth;
   }
   return out;
 }
 
 
-function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth=null){
-  text.split('\n').forEach((line, i) => {
-    ctx.fillText(line, x, y, maxWidth);
+function fillTextMultiLine(ctx, text, lineHeight, x, y, maxWidth){
+  // if (maxWidth === undefined) maxWidth = null;
+  text = text.split('\n');
+  for (var i in text) {
+    ctx.fillText(text[i], x, y, maxWidth);
     y += lineHeight;
-  });
+  }
   return y;
 }
 
