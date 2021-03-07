@@ -60,6 +60,12 @@ class Dice{
     }
   }
 
+  collide(x, y){
+    var dx = (x - this.center[0]) / Dice.SIZE;
+    var dy = (y - this.center[1]) / Dice.SIZE;
+    return dx ** 2 + dy ** 2 < 1;
+  }
+
   draw_on(ctx){
     if (this.roll_since != -1 && Date.now() - this.roll_since < Dice.ROLL_TIME){
       this.edges.forEach((edge, i) => {

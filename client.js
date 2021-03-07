@@ -97,6 +97,8 @@
   function click_handler(e) {
     if (lock_screen) return;
     for (var type in cards) {if (cards[type].collide(...abs2rel(e.offsetX, e.offsetY))) draw_card(type);}
+    dices.forEach((dice, i) => {if (dice.collide(...abs2rel(e.offsetX, e.offsetY))) roll_dice();});
+
     characters.forEach((character, i) => {if (character.collide(...abs2rel(e.offsetX, e.offsetY))) character.inspect();});
   }
 
