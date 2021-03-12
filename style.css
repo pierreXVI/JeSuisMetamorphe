@@ -4,13 +4,12 @@ body {
 
 
 #game_canvas {
-  margin: 10 auto;
   display: block;
 }
 
 
 .modal {
-  display: "block";
+  display: block;
   position: fixed;
   width: 100vw;
   height: 100vh;
@@ -34,7 +33,7 @@ body {
 .modal > .modal-content > input {margin: 3vw;}
 
 .modal > .modal-content > div > input[type="radio"]:checked + label {
-  background: #000000;
+  background: black;
   color: white;
 }
 
