@@ -210,6 +210,7 @@ class Character{
       ctx.beginPath();
       ctx.rect.apply(ctx, [0, 0].concat(rel2abs(Character.WIDTH, Character.HEIGHT)));
       ctx.fill();
+      ctx.stroke();
       ctx.closePath();
 
       ctx.fillStyle = this.align == 'Shadow' ? '#FF0000' : this.align == 'Hunter' ? '#0000FF' : '#F09632';
