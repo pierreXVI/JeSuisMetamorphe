@@ -74,6 +74,53 @@
   });
 
 
+// LOGIN
+  socket.on('login', function(avail) {
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "Choisissez votre couleur :";
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      var radios = document.getElementsByName('player_color');
+      for (var i = 0, length = radios.length; i < length; i++) {
+        if (radios[i].checked) {
+          var i_color = radios[i].value
+          popup.remove();
+          lock_screen = document.getElementsByClassName("modal").length > 0;
+          socket.emit('login', i_color)
+          break;
+        }
+      }
+    }
+
+    popup_content.appendChild(title);
+    for (var i = 0; i < avail.length; i++) {
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.id = "radio" + i.toString();
+      radio.name = "player_color";
+      radio.value = avail[i];
+      radio.style.marginRight = "1vw";
+      var label = document.createElement("label");
+      label.for = "radio" + i.toString();
+      label.appendChild(radio);
+      label.innerHTML = label.innerHTML + PLAYERS[avail[i]]['name'];
+      label.style.display = "block";
+      label.style.margin = "1vw";
+      popup_content.appendChild(label);
+    }
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
+  });
+
+
 // EVENT HANDLERS
   function mousedown_handler(e) {
     if (lock_screen) return;
