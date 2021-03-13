@@ -45,33 +45,33 @@
 
 
 // SERVER --> CLIENT
-  socket.on('move_token', function(data) {
+  function on_move_token (data) {
     tokens[data['i_token']].center = data['center'];
-  });
+  }
 
-  socket.on('roll_dice', function(data) {
+  function on_roll_dice (data) {
     dices.forEach(function(dice, i) {dice.roll_to(data[i]);});
     loader_off('roll_dice');
-  });
+  }
 
-  socket.on('reveal', function(data) {
+  function on_reveal (data) {
     characters[data].revealed = true;
     if (data == id) loader_off('reveal');
-  });
+  }
 
-  socket.on('draw_card', function(data) {
+  function on_draw_card (data) {
     cards[data['type']].draw_card(data['who'], data['i_card']);
     if (data['who'] == id) loader_off('draw_card');
-  });
+  }
 
-  socket.on('vision', function(data) {
+  function on_vision (data) {
     cards['Vision'].answer(data['i_card'], data['i_from']);
-  });
+  }
 
-  socket.on('take_equipment', function(data) {
+  function on_take_equipment (data) {
     characters[data['who']]['equipments'].push(...characters[data['i_player']]['equipments'].splice(data['i_equipment'], 1));
     if (data['who'] == id) loader_off('take_equipment');
-  });
+  }
 
 
 // LOGIN
@@ -239,6 +239,13 @@
     document.addEventListener('mousemove',  mousemove_handler, false);
     document.addEventListener('touchmove',  mousemove_handler, {passive: false});
     document.addEventListener('keydown',    keydown_handler,   false);
+
+    socket.on('move_token',     on_move_token);
+    socket.on('roll_dice',      on_roll_dice);
+    socket.on('reveal',         on_reveal);
+    socket.on('draw_card',      on_draw_card);
+    socket.on('vision',         on_vision);
+    socket.on('take_equipment', on_take_equipment);
 
 
     background = document.getElementById('background');
