@@ -67,22 +67,37 @@
 // SERVER ACTIONS
 	let io = socketIO(http_server);
 	io.on('connection', (socket) => {
-		let id = clients.indexOf(null);
+		let id = -1
+		let avail = clients.map((client, i) => client == null ? i : '').filter(String)
 
-		if (id < 0){
+		if (avail.length == 0){
 			console.log("Connection from", socket.request.connection._peername, "\tdenied");
 			socket.emit('init', {'id': -1});
 			return;
 		}
-		console.log("Connection from", socket.request.connection._peername, "\tgranted as player", id);
+		console.log("Connection from", socket.request.connection._peername);
 
-		clients[id] = socket;
-		socket.emit('init', {
-			'id': id,
-			'tokens_center': tokens_center,
-			'dices_val': dices_val,
-			'characters': characters,
-			'areas': areas
+		socket.emit('login', avail);
+		socket.on('login', (requested_id) => {
+			if (clients[requested_id] == null) {
+				id = requested_id;
+				clients[id] = socket;
+				console.log(socket.request.connection._peername.address, "logged as player", id);
+				socket.emit('init', {
+					'id': id,
+					'tokens_center': tokens_center,
+					'dices_val': dices_val,
+					'characters': characters,
+					'areas': areas
+				});
+			} else {
+				let avail = clients.map((client, i) => client == null ? i : '').filter(String)
+				if (avail.length == 0){
+					socket.emit('init', {'id': -1});
+					return;
+				}
+				socket.emit('login', avail);
+			}
 		});
 
 		socket.on('disconnect', () => {

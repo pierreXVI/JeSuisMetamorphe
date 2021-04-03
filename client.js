@@ -45,32 +45,79 @@
 
 
 // SERVER --> CLIENT
-  socket.on('move_token', function(data) {
+  function on_move_token (data) {
     tokens[data['i_token']].center = data['center'];
-  });
+  }
 
-  socket.on('roll_dice', function(data) {
+  function on_roll_dice (data) {
     dices.forEach(function(dice, i) {dice.roll_to(data[i]);});
     loader_off('roll_dice');
-  });
+  }
 
-  socket.on('reveal', function(data) {
+  function on_reveal (data) {
     characters[data].revealed = true;
     if (data == id) loader_off('reveal');
-  });
+  }
 
-  socket.on('draw_card', function(data) {
+  function on_draw_card (data) {
     cards[data['type']].draw_card(data['who'], data['i_card']);
     if (data['who'] == id) loader_off('draw_card');
-  });
+  }
 
-  socket.on('vision', function(data) {
+  function on_vision (data) {
     cards['Vision'].answer(data['i_card'], data['i_from']);
-  });
+  }
 
-  socket.on('take_equipment', function(data) {
+  function on_take_equipment (data) {
     characters[data['who']]['equipments'].push(...characters[data['i_player']]['equipments'].splice(data['i_equipment'], 1));
     if (data['who'] == id) loader_off('take_equipment');
+  }
+
+
+// LOGIN
+  socket.on('login', function(avail) {
+    var popup = document.createElement("div");
+    popup.className = "modal";
+    var popup_content = document.createElement("div");
+    popup_content.className = "modal-content";
+    var title = document.createElement("h2");
+    title.textContent = "Choisissez votre couleur :";
+    var button = document.createElement("input");
+    button.type = "button";
+    button.value = "OK";
+    button.onclick = function () {
+      var radios = document.getElementsByName('player_color');
+      for (var i = 0, length = radios.length; i < length; i++) {
+        if (radios[i].checked) {
+          var i_color = radios[i].value
+          popup.remove();
+          lock_screen = document.getElementsByClassName("modal").length > 0;
+          socket.emit('login', i_color)
+          break;
+        }
+      }
+    }
+
+    popup_content.appendChild(title);
+    for (var i = 0; i < avail.length; i++) {
+      var radio = document.createElement("input");
+      radio.type = "radio";
+      radio.id = "radio" + i.toString();
+      radio.name = "player_color";
+      radio.value = avail[i];
+      radio.style.marginRight = "1vw";
+      var label = document.createElement("label");
+      label.for = "radio" + i.toString();
+      label.appendChild(radio);
+      label.innerHTML = label.innerHTML + PLAYERS[avail[i]]['name'];
+      label.style.display = "block";
+      label.style.margin = "1vw";
+      popup_content.appendChild(label);
+    }
+    popup_content.appendChild(button);
+    popup.appendChild(popup_content);
+    document.body.appendChild(popup);
+    lock_screen = true;
   });
 
 
@@ -192,6 +239,13 @@
     document.addEventListener('mousemove',  mousemove_handler, false);
     document.addEventListener('touchmove',  mousemove_handler, {passive: false});
     document.addEventListener('keydown',    keydown_handler,   false);
+
+    socket.on('move_token',     on_move_token);
+    socket.on('roll_dice',      on_roll_dice);
+    socket.on('reveal',         on_reveal);
+    socket.on('draw_card',      on_draw_card);
+    socket.on('vision',         on_vision);
+    socket.on('take_equipment', on_take_equipment);
 
 
     background = document.getElementById('background');
